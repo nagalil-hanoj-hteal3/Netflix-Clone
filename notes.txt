@@ -1,0 +1,53 @@
+-- JSON --
+
+1. On package.json, inside "scripts", updating it to  "dev": "node backend/server.js"
+to run the script, therefore using the command "npm run dev"
+2. Utilize the "main" to call the server.js to run the code
+3. 
+
+-- server.js --
+
+1. Imports can be used when adding "type": "module"
+of package.json (line 11). this will prevent using const and have
+organized code when calling libraries.
+2. The center of connecting all the code together
+
+-- auth.route.js --
+
+1. Keep this to use the routing of the authorization (signup, login, logout)
+2. Will be using POST method to modify changes 
+3. The GET method is only used for display the changes added
+
+-- user.model.js --
+
+1. Used for the MongoDB to setup the Users table
+2. Consists of username, email, password, image, and search history
+
+-- envVars.js --
+
+1. Use the dotenv library to use the .env file extension to run the 
+MongoDB URL as well as running the port 
+
+-- db.js --
+
+1. Connect the MongoDB from the pasted link used 
+2. Ensure everything is running
+
+-- .env --
+
+1. Used for the environment setup for PORT and MONGO DB
+2. MONGO DB will be used for a link thats added from the account setup
+in cloud.mongodb.com
+
+-- running the code --
+
+1. It is always important to kill the code ran everytime a change is made
+in order to keep it consistent with the updated changes, however, to
+prevent this, include "--watch" in between "node" and "server.js", for not
+having to keep on killing the terminal to run the newly changes.
+
+-- command tricks --
+
+1. ctrl + d to capture all matching words and override all as one. 
+Example: There are three words called "get", keep pressing ctrl + d 
+three times and type any letter to override all the matching words.
