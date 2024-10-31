@@ -1,3 +1,13 @@
+-- required npm libraries --
+
+1. Express: Web framework for server
+2. JSONwebtoken: Authentication to create tokens and record Authentication
+3. Mongoose: MongoDB to interact with the data we have 
+4. Cookie-Parser: To parse incoming cookies under a request
+5. Dotenv: To work with environment variables 
+6. Axios: HTTP client alternative to request data
+7. BCryptJS: To encrypt/hash password
+
 -- JSON --
 
 1. On package.json, inside "scripts", updating it to  "dev": "node backend/server.js"
