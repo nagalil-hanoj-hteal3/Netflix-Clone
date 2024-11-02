@@ -43,11 +43,30 @@ MongoDB URL as well as running the port
 1. Connect the MongoDB from the pasted link used 
 2. Ensure everything is running
 
+-- auth.controller.js --
+
+1. Utilize the signup, login, and logout features for account purposes
+2. bcryptjs is used for hashing the password on the MongoDB
+3. For signup, validate for existing email/username, valid email, as well as 
+password length (soon to touch on), and internal errors.
+4. For logout, it will clear the cookies created from the signup (via the 
+generateToken from jwt and envVars.js) and can be verified from the console log 
+as well as the postman to verify that the user is logged out.
+
+-- generateToken.js --
+
+1. Primarily for setting cookies and see the user's cookies of the created account
+2. Can be used to set how long a user can have access to the account
+3. Beneficial to prevent XSS attacks
+4. On postman, you can see the cookies tab per account created
+
 -- .env --
 
 1. Used for the environment setup for PORT and MONGO DB
 2. MONGO DB will be used for a link thats added from the account setup
 in cloud.mongodb.com
+3. Added JWT_Secret for security purposes
+4. Set the node environment based on the developer needs
 
 -- running the code --
 
