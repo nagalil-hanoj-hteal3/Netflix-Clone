@@ -21,7 +21,9 @@ to run the script, therefore using the command "npm run dev"
 of package.json (line 11). this will prevent using const and have
 organized code when calling libraries.
 2. The center of connecting all the code together consisting
-of authorization, movies, etc.
+of authorization, movies, searching, etc.
+3. Includes protectRoute as the middleware to prevent unauthorized users to access
+the website.
 
 -- auth.route.js --
 
@@ -71,9 +73,37 @@ as well as the postman to verify that the user is logged out.
 1. Capture routes of the movie database website to capture certain elements
 that is displayed
 
--- movie.controller.js -- 
+-- movieTv.controller.js -- 
 
-1. Retrieve data from the url for trending
+1. Retrieve data from the url for both movies and TV sections.
+2. Handles the status when utilizing the strategy design pattern for connection
+status and determining which category goes to which.
+
+-- movietv.route.js --
+
+1. Same concept, but utilizing type to determine tv show or movie
+
+-- movie.strategy.js / tv.strategy.js --
+
+1. Call the neccessary fetch data from the database to call which strategy or 
+concept to be used (i.e. trending, trailers, details, etc.)
+2. Used as strategy to collect the neccessary information
+
+-- protectRoute.js --
+
+1. Call the jsonwebtoken, environment variables, and user for detecting
+any fraudelent or unnecessary users that access the website.
+2. Users must login in order to access the website.
+
+-- search.route.js --
+
+1. Capture ways to search a person, movie, or tv show with query
+2. Obtain history of user search history as well as deleting search items
+
+-- search.controller.js --
+
+1. Obtain the queries of each function with person, movie, tv 
+2. Backend functionality of using the API necessary for the role
 
 -- .env --
 
