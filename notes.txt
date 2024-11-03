@@ -20,7 +20,8 @@ to run the script, therefore using the command "npm run dev"
 1. Imports can be used when adding "type": "module"
 of package.json (line 11). this will prevent using const and have
 organized code when calling libraries.
-2. The center of connecting all the code together
+2. The center of connecting all the code together consisting
+of authorization, movies, etc.
 
 -- auth.route.js --
 
@@ -35,8 +36,8 @@ organized code when calling libraries.
 
 -- envVars.js --
 
-1. Use the dotenv library to use the .env file extension to run the 
-MongoDB URL as well as running the port 
+1. Assign variables called from the .env file to protect API keys as well as
+private information (thanks to .gitignore)
 
 -- db.js --
 
@@ -60,6 +61,20 @@ as well as the postman to verify that the user is logged out.
 3. Beneficial to prevent XSS attacks
 4. On postman, you can see the cookies tab per account created
 
+-- tmdb.service.js --
+
+1. Call the API key from The Movie Database website to fetch data
+2. This will return the data that is from the website
+
+-- movie.route.js --
+
+1. Capture routes of the movie database website to capture certain elements
+that is displayed
+
+-- movie.controller.js -- 
+
+1. Retrieve data from the url for trending
+
 -- .env --
 
 1. Used for the environment setup for PORT and MONGO DB
@@ -67,6 +82,7 @@ as well as the postman to verify that the user is logged out.
 in cloud.mongodb.com
 3. Added JWT_Secret for security purposes
 4. Set the node environment based on the developer needs
+5. Added movie DB api key for reference
 
 -- running the code --
 
