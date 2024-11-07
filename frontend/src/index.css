@@ -5,3 +5,32 @@
 .hero-bg{
   background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.1)), url("hero.png");
 }
+
+.hero2-bg {
+  background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.1)), url("background2.jpg");
+}
+
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.2s ease-in;
+}
+
+.fade-out {
+  opacity: 0.97;
+  transition: opacity 0.2s ease-out;
+}
+
+.shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #2c2c2c 4%, #333 25%, #2c2c2c 36%);
+  background-size: 1000px 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}

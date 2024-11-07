@@ -1,0 +1,49 @@
+FRONTEND
+
+-- required npm libraries --
+
+1. Change directory to frontend to install
+2. Vite -> hold the src/public
+3. React-Hot-Toast -> success/error case for pop up messages
+4. Lucide-React -> icons
+5. react-player -> grab video from youtube as a trailer
+6. axios -> HTTP requests
+7. react-router-dom -> navigate to different pages
+8. zustand -> global state
+9. install tailwind with vite to obtain tailwind.config.js
+
+-- main.jsx --
+
+1. Include BrowserRouter from react-router-dom to have different routes
+such as login, home, signup.
+
+-- App.jsx --
+
+1. Utilize routes to connect all the different routes in the folder
+2. Example: path="/" element={Home Page} and more
+3. Import the elements from the different files
+
+-- index.html --
+
+1. Keep for storing all the react stuff in html
+
+-- index.css --
+
+1. For background photos
+
+-- eslint.config.js --
+
+1. Add react/no-unescaped-entities under the rules and set it to off if you 
+want to use apostophes ' instead of &apos;
+2. Add react/prop-type for disabling parameters inside function
+
+-- running the code --
+
+1. cd frontend -> npm run dev -> open localhost url
+
+-- dependencies to install in VS Code --
+
+1. ESLint -> Link Vite into code 
+2. tailwind css intelligent -> for className advancements
+3. ES7 + React/Redux/React-Native snippet (dsznajder) -> to 
+have shortcuts such as "rafce" to include new code

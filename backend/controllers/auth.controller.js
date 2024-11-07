@@ -5,18 +5,26 @@ import { generateTokenAndSetCookie } from '../utils/generateToken.js';
 export async function signup(req, res) {
 
     try {
-        const {email, password, username} = req.body;
+        const {email, password, confirmPassword, username} = req.body;
 
-        if(!email || !password || !username) 
-            return res.status(400).json({success:false, message:"All fields required"});
+        if(!email || !password || !username || !confirmPassword) 
+            return res.status(400).json({success:false, message:"All fields are required"});
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if(!emailRegex.test(email))
             return res.status(400).json({success:false, message:"Invalid email"});
 
-        if(password.length < 6)
-            return res.status(400).json({success:false, message:"Password must be more than 6 characters."});
+        // if(password.length < 6)
+        //     return res.status(400).json({success:false, message:"Password must be more than 6 characters."});
+
+        if(password !== confirmPassword)
+            return res.status(400).json({ success: false, message: "Passwords do not match!" });
+
+        const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!strongPasswordRegex.test(password)) {
+            return res.status(400).json({ success: false, message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special character." });
+        }
 
         const existingUserEmail = await User.findOne({
             email: email
@@ -37,14 +45,22 @@ export async function signup(req, res) {
         const salt = await bcryptjs.genSalt(10);
         const hashedPassword = await bcryptjs.hash(password, salt);
 
-        const PROFILE_PICS = ["", "", ""];
+        const PROFILE_PICS = [
+            "/avatar/avatar1.png", "/avatar2.jpg", "/avatar/avatar3.png", "/avatar/1.png", "/avatar/2.png", "/avatar/3.png", "/avatar/4.png",
+            "/avatar/5.png", "/avatar/6.png", "/avatar/7.png", "/avatar/8.png", "/avatar/9.png", "/avatar/10.png", "/avatar/11.png", "/12.png", "/avatar/13.png",
+            "/avatar/14.png", "/avatar/15.png", "/avatar/16.png", "/avatar/17.png", "/avatar/18.png", "/avatar/19.png", "/avatar/20.png", "/avatar/21.png", "/avatar/22.png",
+            "/avatar/23.png", "/avatar/24.png", "/avatar/25.png", "/avatar/26.png", "/avatar/27.png", "/avatar/28.png", "/avatar/29.png", "/avatar/30.png", "/avatar/31.png",
+            "/avatar/32.png", "/avatar/33.png", "/avatar/34.png", "/avatar/35.png", "/avatar/36.png", "/avatar/37.png", "/avatar/38.png", "/avatar/39.png", "/avatar/40.png",
+            "/avatar/41.png", "/avatar/42.png", "/avatar/43.png", "/avatar/44.png", "/avatar/45.png", "/avatar/46.png", "/avatar/47.png", "/avatar/48.png", "/avatar/49.png",
+            "/avatar/50.png", "/avatar/51.png", "/avatar/52.png", "/avatar/53.png", "/avatar/54.png", "/avatar/55.png", "/avatar/56.png", "/avatar/57.png", "/avatar/58.png",
+            ];
         const image = PROFILE_PICS[Math.floor(Math.random() * PROFILE_PICS.length)];
 
         const newUser = new User({
             email,
             password: hashedPassword,
             username,
-            image
+            image,
         });
 
         generateTokenAndSetCookie(newUser._id, res)
@@ -52,7 +68,7 @@ export async function signup(req, res) {
 
         // Remove password from response
         res.status(201).json({sucess: true, user: {
-            ...newUser_doc,
+            ...newUser._doc,
             password:""
         }});
 
@@ -111,4 +127,14 @@ export async function logout(req, res) {
         res.status(500).json({success:false, message:"Internal server error"});
     }
     // res.send("Logout route");
+}
+
+export async function authCheck(req, res) {
+    try{
+        console.log("req.user:", req.user);
+        res.status(200).json({success:true, user: req.user});
+    } catch(error) {
+        console.log("Error in authCheck controller function");
+        res.status(200).json({success:false, message:"Internal server error"});
+    }
 }

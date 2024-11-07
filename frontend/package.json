@@ -11,13 +11,16 @@
   },
   "dependencies": {
     "axios": "^1.7.7",
+    "frontend": "file:",
     "lucide-react": "^0.454.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.4.1",
     "react-player": "^2.16.0",
     "react-router-dom": "^6.27.0",
-    "zustand": "^5.0.1"
+    "tailwind-scrollbar-hide": "^1.1.7",
+    "zustand": "^5.0.1",
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
