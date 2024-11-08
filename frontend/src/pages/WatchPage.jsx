@@ -20,7 +20,10 @@ export const WatchPage = () => {
     const {contentType} = useContentStore();
     const sliderRef = useRef(null);
 
-    const [reviewContent, setReviewContent] = useState([]);
+    // added
+    const [reviewContent, setReviewContent] = useState({ results: []});
+    const [expandedIndex, setExpandedIndex] = useState(null);
+    const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
 
     // console.log(reviewContent.length);
 
@@ -75,15 +78,16 @@ export const WatchPage = () => {
         getContentDetails();
     }, [contentType, id]);
 
+    // work in progress for the review portion
     useEffect(() => {
         const getContentReview = async () => {
             try {
                 const res = await axios.get(`/api/v1/content/${contentType}/${id}/reviews`);
-                console.log(res.data.review);
+                console.log("review: ", res.data.review);
                 setReviewContent(res.data.review);
             } catch (error) {
                 if (error.message.includes("404")) {
-                    setReviewContent(null);
+                    setReviewContent({results: []});
                 }
             }
         };
@@ -122,6 +126,28 @@ export const WatchPage = () => {
             <WatchPageSkeleton/>
         </div>
     )
+
+    // added
+    const toggleContent = (index) => {
+        setExpandedIndex(expandedIndex === index ? null : index);
+    };
+
+    const goToNextReview = () => {
+        if(currentReviewIndex < reviewContent.total_results - 1)
+            setCurrentReviewIndex(currentReviewIndex + 1);
+        else
+            setCurrentReviewIndex(0);
+    };
+
+    const goToPrevReview = () => {
+        if (currentReviewIndex > 0)
+            setCurrentReviewIndex(currentReviewIndex -1);
+        else
+            setCurrentReviewIndex(reviewContent.total_results - 1);
+    };
+
+    console.log("review content: " + reviewContent.total_results);
+    console.log("review content 1: ", reviewContent.results[1]);
 
     return (
         // <Navbar/>
@@ -206,9 +232,10 @@ export const WatchPage = () => {
 					/>
                 </div>
                 
+                {/* similar portion */}
                 {similarContent.length > 0 && (
                     <div className="mt-12 max-w-5xl mx-auto relative">
-                        <h3 className="text-3xl font-bold mb-4">
+                        <h3 className="text-4xl font-bold mb-4">
                             Similar Movies/TV show
                         </h3>
 
@@ -216,10 +243,10 @@ export const WatchPage = () => {
                         ref={sliderRef}>
                             {similarContent.map((content) => (
                                 <Link key={content.id} to={`/watch/${content.id}`}
-                                    className="w-52 flex-none">
+                                    className="w-52 flex-none hover:text-red-300">
                                     <img src={content.poster_path ? SMALL_IMG_BASE_URL + content.poster_path : "/unavailable.jpg"} // Fallback image
                                         alt="Similar Poster path"
-                                        className="w-full h-auto rounded-md"/>
+                                        className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"/>
                                     <h4 className="mt-2 text-lg font-semibold">
                                         {content.title || content.name}
                                     </h4>
@@ -241,20 +268,51 @@ export const WatchPage = () => {
 
                         </div>
                     </div>
-                )};
+                )}
 
-                {/* 854 or 670 <- use for now*/}
+                {/*Reviews portion*/}
 
-                {/* {reviewContent.length > 0 && (
+                <div className="mt-12 max-w-5xl mx-auto relative">
+                    <h2 className="text-4xl font-bold mb-8">Reviews</h2>
+                    {reviewContent.results.length === 0 ? (
+                        <p className="mt-4 text-rose-200 ">No reviews available at this time.</p>
+                    ) : (
+                        // to display reviews per person
+                        <div className="flex items-center justify-between w-full">
+                            {/* Left Chevron */}
+                            <ChevronLeft
+                                onClick={goToPrevReview}
+                                className="w-8 h-8 cursor-pointer bg-red-600 text-white rounded-full flex-shrink-0"
+                            />
 
-                ) :
+                            {/* Current Review */}
+                            <div ref={sliderRef} className="max-w-3xl">
+                                <h3 className="text-2xl font-bold mb-4 hover:underline">
+                                    {reviewContent.results[currentReviewIndex].author}
+                                </h3>
+                                <p className="text-lg">
+                                    {expandedIndex === currentReviewIndex || reviewContent.results[currentReviewIndex].content.length <= 300
+                                        ? reviewContent.results[currentReviewIndex].content
+                                        : `${reviewContent.results[currentReviewIndex].content.slice(0, 300)}...`}
+                                    {reviewContent.results[currentReviewIndex].content.length > 300 && (
+                                        <button onClick={() => toggleContent(currentReviewIndex)} className="text-white hover:text-blue-600">
+                                            {expandedIndex === currentReviewIndex ? `\u00A0See less` : `\u00A0See more`}
+                                        </button>
+                                    )}
+                                </p>
+                                <p className="mt-4 text-rose-200 text-sm">
+                                    {new Date(reviewContent.results[currentReviewIndex].created_at).toLocaleDateString()}
+                                </p>
+                            </div>
 
-                (
-
-                )
-                
-                }; */}
-
+                            {/* Right Chevron */}
+                            <ChevronRight
+                                onClick={goToNextReview}
+                                className="w-8 h-8 cursor-pointer bg-red-600 text-white rounded-full flex-shrink-0"
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )
