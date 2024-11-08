@@ -146,7 +146,7 @@ export const WatchPage = () => {
             setCurrentReviewIndex(reviewContent.total_results - 1);
     };
 
-    console.log("review content: " + reviewContent.total_results);
+    // console.log("review content: " + reviewContent.total_results);
     console.log("review content 1: ", reviewContent.results[1]);
 
     return (
@@ -285,10 +285,14 @@ export const WatchPage = () => {
                                 className="w-8 h-8 cursor-pointer bg-red-600 text-white rounded-full flex-shrink-0"
                             />
 
-                            {/* Current Review */}
+                            {/* Current Review https://image.tmdb.org/t/p/w200/xy44UvpbTgzs9kWmp4C3fEaCl5h.png */}
                             <div ref={sliderRef} className="max-w-3xl">
-                                <h3 className="text-2xl font-bold mb-4 hover:underline">
-                                    {reviewContent.results[currentReviewIndex].author}
+                                <h3 className="text-2xl font-bold mb-4 hover:underline flex items-center justify-between">
+                                    <img src={`https://image.tmdb.org/t/p/w200/${reviewContent.results[currentReviewIndex].author_details.avatar_path}`}
+                                        alt={`${reviewContent.results[currentReviewIndex].author} Avatar`}
+                                        className="w-20 h-20 rounded-full"
+                                    />
+                                    <span className="text-right">{reviewContent.results[currentReviewIndex].author}</span>
                                 </h3>
                                 <p className="text-lg">
                                     {expandedIndex === currentReviewIndex || reviewContent.results[currentReviewIndex].content.length <= 300
@@ -302,6 +306,7 @@ export const WatchPage = () => {
                                 </p>
                                 <p className="mt-4 text-rose-200 text-sm">
                                     {new Date(reviewContent.results[currentReviewIndex].created_at).toLocaleDateString()}
+                                    {" | Rated: "}{reviewContent.results[currentReviewIndex].author_details.rating}{"/10"}
                                 </p>
                             </div>
 
@@ -318,4 +323,4 @@ export const WatchPage = () => {
     )
 }
 
-export default WatchPage;
+// export default WatchPage;

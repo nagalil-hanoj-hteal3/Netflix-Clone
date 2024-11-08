@@ -8,6 +8,9 @@ import { useAuthStore } from "./store/authUser.js";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { WatchPage } from "./pages/WatchPage.jsx";
+import { SearchPage } from "./pages/SearchPage.jsx";
+
+import { ActorPage } from "./pages/ActorPage.jsx";
 
 function App() {
   const {user, isCheckingAuth, authCheck} = useAuthStore();
@@ -39,8 +42,13 @@ function App() {
       {/* if not authenticated, show sign up page, if authenticated -> navigate them to home page */}
       <Route path="/signup" element={!user ? <SignupPage/> : <Navigate to={"/"}/>}/> 
 
-      {/* Check if the user is logged in  */}
+      {/* Check if the user is logged in to use the watch page */}
       <Route path="/watch/:id" element={user ? <WatchPage/> : <Navigate to={"/"}/>}/>
+
+      {/* Check if the user is logged in to use the search page */}
+      <Route path="/search" element={user ? <SearchPage/> : <Navigate to={"/login"}/>}/>
+
+      <Route path="/actor/:id" element={user ? <ActorPage/> : <Navigate to={"/login"}/>}/>
 
     </Routes>
     <Toaster/>
