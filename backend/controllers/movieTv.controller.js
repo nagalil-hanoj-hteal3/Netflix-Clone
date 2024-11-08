@@ -28,7 +28,7 @@ export async function getTrailers(req, res) {
     }
     try {
         const result = await strategy.getTrailers(id);
-        res.json({ success: true, content: result });
+        res.json({ success: true, trailers: result });
     } catch (error) {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
@@ -56,7 +56,7 @@ export async function getSimilar(req, res) {
     }
     try {
         const result = await strategy.getSimilar(id);
-        res.json({ success: true, content: result });
+        res.json({ success: true, similar: result });
     } catch (error) {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
