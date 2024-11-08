@@ -85,7 +85,7 @@ export async function getReviews(req, res) {
     }
     try {
         const result = await strategy.getReviews(id);
-        res.json({ success: true, content: result });
+        res.json({ success: true, review: result });
     } catch (error) {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
