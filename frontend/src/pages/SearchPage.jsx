@@ -25,7 +25,7 @@ export const SearchPage = () => {
 		setResults(searchResults);
 	};
 
-    // console.log("results: ", results);
+    console.log("results: ", results);
 	// console.log("known_for: ", results[2].known_for);
 
 	return (
@@ -104,4 +104,4 @@ export const SearchPage = () => {
 		</div>
 	);
 };
-// export default SearchPage;
+export default SearchPage;

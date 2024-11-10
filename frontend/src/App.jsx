@@ -7,10 +7,13 @@ import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authUser.js";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
-import { WatchPage } from "./pages/WatchPage.jsx";
-import { SearchPage } from "./pages/SearchPage.jsx";
+import WatchPage from "./pages/WatchPage";
+import SearchPage from "./pages/SearchPage";
+import HistoryPage from "./pages/HistoryPage";
+import NotFound from "./pages/NotFound";
 
-import { ActorPage } from "./pages/ActorPage.jsx";
+import ActorPage from "./pages/ActorPage";
+import MoreInfoPage from "./pages/MoreInfoPage.jsx";
 
 function App() {
   const {user, isCheckingAuth, authCheck} = useAuthStore();
@@ -48,7 +51,13 @@ function App() {
       {/* Check if the user is logged in to use the search page */}
       <Route path="/search" element={user ? <SearchPage/> : <Navigate to={"/login"}/>}/>
 
+      <Route path="/history" element={user ? <HistoryPage/> : <Navigate to={"/login"}/>}/>
+
+      <Route path="/*" element={<NotFound/>}/>
+
       <Route path="/actor/:id" element={user ? <ActorPage/> : <Navigate to={"/"}/>}/>
+
+      <Route path="/moreinfo/:id" element={user ? <MoreInfoPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>

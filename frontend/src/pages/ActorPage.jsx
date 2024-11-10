@@ -5,9 +5,8 @@ import toast from "react-hot-toast";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import Navbar from "../components/Navbar";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
-// import { Link } from "react-router-dom";
 
-export function ActorPage() {
+export const ActorPage = () => {
     const { id } = useParams(); // Get actor ID from URL
     const [actorDetails, setActorDetails] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -62,7 +61,7 @@ export function ActorPage() {
             <div className="flex flex-col items-center">
                 <img src={`https://image.tmdb.org/t/p/original${actorDetails.profile_path}`}
                 alt={actorDetails.name}
-                className="w-64 h-80 rounded-md mb-4 mt-8"/>
+                className="w-64 h-80 rounded-md mb-4 mt-3"/>
                 <h1 className="text-3xl font-bold mb-2">{actorDetails.name}</h1>
                 <p className="italic text-rose-400">{actorDetails.known_for_department}</p>
             </div>
@@ -148,3 +147,5 @@ export function ActorPage() {
         </div>
     );
 }
+
+export default ActorPage

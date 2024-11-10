@@ -4,16 +4,14 @@ import { useContentStore } from "../store/content";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
-import ReactPlayer from "react-player";
 import { ORIGINAL_IMG_BASE_URL, SMALL_IMG_BASE_URL } from "../utils/constants";
 import { formatReleaseDate } from "../utils/dateFunction";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 
-export const WatchPage = () => {
+export const MoreInfoPage = () => {
+
     const {id} = useParams();
     // console.log(id);
-    const [trailers, setTrailers] = useState([]);
-    const [currentTrailerIdx, setCurrentTrailerIdx] = useState(0);
     const [loading, setLoading] = useState(true);
     const [content, setContent] = useState(null);
     const [similarContent, setSimilarContent] = useState([]);
@@ -35,25 +33,6 @@ export const WatchPage = () => {
     const review = reviewContent?.results?.[currentReviewIndex];
     const rating = review?.author_details?.rating || 0;
     const reviewStarRating = rating / 2;
-
-    // console.log(reviewContent.length);
-
-    // trailers of the movie or tv show
-    useEffect(() => {
-        const getTrailers = async () => {
-            try {
-                const res = await axios.get(`/api/v1/content/${contentType}/${id}/trailers`);
-                // console.log("Full content response:", res.data.content);
-                setTrailers(res.data.trailers);
-            } catch (error) {
-                if(error.message.includes("404")) {
-                    console.log("No trailers found...empty");
-                    setTrailers([]);
-                }
-            }            
-        };
-        getTrailers();
-    }, [contentType, id]);
 
     // similar of the movie or tv show
     useEffect(() => {
@@ -122,16 +101,6 @@ export const WatchPage = () => {
         getCastDetails();
     }, [contentType, id]);
 
-    const handleNext = () => {
-        if(currentTrailerIdx < trailers.length - 1)
-            setCurrentTrailerIdx(currentTrailerIdx +1);
-    }
-
-    const handlePrev = () => {
-        if(currentTrailerIdx > 0)
-            setCurrentTrailerIdx(currentTrailerIdx -1);
-    }
-
     const scrollLeft = (ref) => {
         if (ref.current) ref.current.scrollBy({ left: -ref.current.offsetWidth, behavior: "smooth" });
     };
@@ -164,75 +133,17 @@ export const WatchPage = () => {
         else
             setCurrentReviewIndex(reviewContent.total_results - 1);
     };
-    
-    // console.log("test: ", reviewContent);
-    console.log("test: ", castMember);
 
     return (
-        // <Navbar/>
         <div className="bg-black min-h-screen text-white">
-            <div className="mx-auto container px-4 py-8 h-full">
+            <div className="mx-auto container px-4 py-2 h-full">
                 <Navbar/>
-
-                {trailers.length > 0 && (
-                <div className="flex justify-between items-center mb-4">
-                    <button className={
-                        `bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${currentTrailerIdx === 0 ?
-                        "cursor-not-allowed opacity-50": ""}
-                        `}
-                        disabled={currentTrailerIdx === 0}>
-                        <ChevronLeft size={24}
-                            onClick={handlePrev}
-                        />
-                    </button>
-
-                    <button className={
-                        `bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded ${currentTrailerIdx === trailers.length-1 ?
-                        "cursor-not-allowed opacity-50": ""}
-                        `}
-                        disabled={currentTrailerIdx === trailers.length-1}>
-                        <ChevronRight size={24}
-                            onClick={handleNext}
-                        />
-                    </button>
-                </div>)}
-                
-                {/* video display */}
-                <div className="aspect-video mb-4 p-2 sm:px-10 md:px-32">
-                    
-                    {/* display trailers about the movie/tv show */}
-                    {trailers.length > 0 ? (
-                        <ReactPlayer
-                            controls={true}
-                            width={"100%"}
-                            height={"70vh"}
-                            className="mx-auto overflow-hidden rounded-lg"
-                            url={`https://www.youtube.com/watch?v=${trailers[currentTrailerIdx].key}`}
-                        />
-                    ) : (
-                        <div className="text-center mt-5">
-                            <img
-                                src="/404.png"  // Path to your fallback image
-                                alt="No trailers available"
-                                className="mx-auto max-w-full h-auto rounded-lg"
-                            />
-                            <h2 className="text-xl mt-3">
-                                Sorry, we currently do not have trailers of{" "}
-                                <span className="font-bold text-red-600">
-                                    {content?.title || content?.name}
-                                </span> at this time 😥
-                            </h2>
-                        </div>
-                    )}
-
-                </div>
-
                 {/* movie details */}
 
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 max-w-6xl mx-auto">
                 {/* Left Section: Content Details */}
                     <div className="mb-4 md:mb-0 w-full md:w-1/2 ">
-                        <h2 className="text-5xl font-bold text-balance">{content?.title || content?.name}</h2>
+                        <h2 className="text-5xl font-bold text-balance mt-16">{content?.title || content?.name}</h2>
                         <p className="mt-2 text-lg">Released:{" "}
                         {formatReleaseDate(content?.release_date || content?.first_air_date)} |{" "}
                         {content?.adult ? (
@@ -243,7 +154,7 @@ export const WatchPage = () => {
                         </p>
                         <p className="mt-4 text-lg">{content?.overview}</p>
                         <p className="mt-4 text-lg">Overall Score: {score.toFixed(1)} / 10</p>
-                        <div className="flex space-x-1 mt-2">
+                        <div className="flex space-x-2 mt-2">
                             {[...Array(5)].map((_, index) => {
                             const fullStars = Math.floor(starRating);
                             const decimal = starRating - fullStars;
@@ -284,7 +195,7 @@ export const WatchPage = () => {
 
                         {/* Cast */}
                         {castMember.cast.length > 0 && (
-                        <div className="mt-8 max-w-full mx-auto relative group">
+                        <div className="mt-12 max-w-full mx-auto relative group">
                             <h3 className="text-4xl font-bold mb-4">Cast</h3>
                             <div className="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide" ref={castSliderRef}>
                             {castMember.cast.map((actor) => (
@@ -309,7 +220,7 @@ export const WatchPage = () => {
 
                     {/* Right Section: Poster Image */}
                     <div className="w-full md:w-1/2">
-                        <img
+                    <img
                         src={content?.poster_path ? ORIGINAL_IMG_BASE_URL + content.poster_path : '/unavailable.jpg'}
                         alt="Poster image"
                         className="max-h-[700px] w-full object-cover rounded-md"
@@ -432,4 +343,4 @@ export const WatchPage = () => {
     )
 }
 
-export default WatchPage;
+export default MoreInfoPage;
