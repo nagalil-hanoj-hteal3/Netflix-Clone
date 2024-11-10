@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { SMALL_IMG_BASE_URL } from "../utils/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// eslint-disable-next-line react/prop-types
 export const MovieSlider = ({category}) => {
     const { contentType } = useContentStore();
     const [ content, setContent ] = useState([]);
@@ -12,6 +13,7 @@ export const MovieSlider = ({category}) => {
 
     const sliderRef = useRef(null);
 
+    // eslint-disable-next-line react/prop-types
     const formattedCategoryName = category.replaceAll("_", " ")[0].toUpperCase() + category.replaceAll("_", " ").slice(1);
     const formattedContentType = contentType === "movie" ? "Movies" : "TV Shows";
 

@@ -24,6 +24,10 @@ const MovieStrategy = {
     async getReviews (id) {
         const data = await fetchFromTMDB(`https://api.themoviedb.org/3/movie/${id}/reviews?language=en-US&page=1`);
         return data;
+    },
+    async getCast(id) {
+        const data = await fetchFromTMDB(`https://api.themoviedb.org/3/movie/${id}/credits?language=en-US`);
+        return data;
     }
 }
 

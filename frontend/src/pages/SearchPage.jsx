@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useContentStore } from "../store/content";
 import Navbar from "../components/Navbar";
 import { Search } from "lucide-react";
-import toast from "react-hot-toast";
-import axios from "axios";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
 import { Link } from "react-router-dom";
+import { fetchSearchResults } from "../utils/searchUtils";
 
 export const SearchPage = () => {
 	const [activeTab, setActiveTab] = useState("movie");
@@ -22,19 +21,12 @@ export const SearchPage = () => {
 
 	const handleSearch = async (e) => {
 		e.preventDefault();
-		try {
-			const res = await axios.get(`/api/v1/search/${activeTab}/${searchTerm}`);
-			setResults(res.data.content);
-		} catch (error) {
-			if (error.response.status === 404) {
-				toast.error("Nothing found, make sure you are searching under the right category");
-			} else {
-				toast.error("An error occurred, please try again later");
-			}
-		}
+		const searchResults = await fetchSearchResults(activeTab, searchTerm);
+		setResults(searchResults);
 	};
 
-    console.log("results: ", results);
+    // console.log("results: ", results);
+	// console.log("known_for: ", results[2].known_for);
 
 	return (
 		<div className='bg-black min-h-screen text-white'>
@@ -87,10 +79,8 @@ export const SearchPage = () => {
 						return (
 							<div key={result.id} className='bg-gray-800 p-4 rounded'>
 								{activeTab === "person" ? (
-									<Link to={"/actor/" + result.id} className='flex flex-col items-center'>
-										<img src={ORIGINAL_IMG_BASE_URL + result.profile_path}
-											alt={result.name}
-											className='max-h-96 rounded mx-auto'/>
+									<Link to={`/actor/${result.id}`} state={{ knownFor: result.known_for }} className='flex flex-col items-center'>
+										<img src={ORIGINAL_IMG_BASE_URL + result.profile_path} alt={result.name} className='max-h-96 rounded mx-auto'/>
 										<h2 className='mt-2 text-xl font-bold'>{result.name}</h2>
 									</Link>
 								) : (

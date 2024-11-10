@@ -5,7 +5,8 @@ import {
     getDetails, 
     getSimilar, 
     getCategory, 
-    getReviews } 
+    getReviews,
+    getCast } 
     from "../controllers/movieTv.controller.js";
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.get("/:type/:id/details", getDetails);
 router.get("/:type/:id/similar", getSimilar);
 router.get("/:type/:category", getCategory);
 router.get("/:type/:id/reviews", getReviews);
+router.get("/:type/:id/credits", getCast);
 
 export default router;

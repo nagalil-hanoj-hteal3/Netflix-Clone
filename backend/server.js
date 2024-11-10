@@ -20,7 +20,6 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/content", protectRoute, movieTvRoutes);
 app.use("/api/v1/search", protectRoute, searchRoutes);
-
 app.use("/api/v1/actor", protectRoute, actorRoutes);
 
 // app.get("/", (req, res) =>{

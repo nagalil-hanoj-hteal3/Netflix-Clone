@@ -90,3 +90,18 @@ export async function getReviews(req, res) {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
+
+export async function getCast(req, res) {
+    const {type, id} = req.params;
+    const strategy = strategies[type];
+    if(!strategy)
+    {
+        return res.status(400).json({ success: false, message: "Invalid type" });
+    }
+    try {
+        const result = await strategy.getCast(id);
+        res.json({success: true, content: result});
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}

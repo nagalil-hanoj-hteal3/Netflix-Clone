@@ -48,7 +48,7 @@ function App() {
       {/* Check if the user is logged in to use the search page */}
       <Route path="/search" element={user ? <SearchPage/> : <Navigate to={"/login"}/>}/>
 
-      <Route path="/actor/:id" element={user ? <ActorPage/> : <Navigate to={"/login"}/>}/>
+      <Route path="/actor/:id" element={user ? <ActorPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>
