@@ -1,6 +1,6 @@
 # Netflix Clone 
 <p>This Netflix-inspired streaming website enables users to browse movies, TV shows, and actors with a fully responsive interface from laptop, phone, etc. This project demonstrates a full-stack development process using the MERN stack (MongoDB, Express, React, Node.js) and integrates additional advanced features and optimizations.</p>
-<p>Link to try the website: <a>https://netflix-clone-yq9d.onrender.com/</a></p>
+<p>Link to try the website: Click <a href="https://netflix-clone-yq9d.onrender.com" target="_blank">Here</a>!</p>
 <a href="https://youtu.be/gBgN-snVXf0" target="_blank">Click here to watch the demo!</a>
 
 <h1>📚 Project Overview</h1>
