@@ -153,45 +153,59 @@ export const MoreInfoPage = () => {
                         )}{" "}
                         </p>
                         <p className="mt-4 text-lg">{content?.overview}</p>
-                        <p className="mt-4 text-lg">Overall Score: {score.toFixed(1)} / 10</p>
-                        <div className="flex space-x-2 mt-2">
-                            {[...Array(5)].map((_, index) => {
-                            const fullStars = Math.floor(starRating);
-                            const decimal = starRating - fullStars;
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                            {/* Overall Score and Star Rating */}
+                            <div className="flex flex-col space-y-2">
+                                <p className="text-lg">Overall Score: {score.toFixed(1)} / 10</p>
 
-                            let clipPath = "none"; // Default is fully filled
-                            let shouldFill = index < fullStars; // Determine if the star should be fully filled
+                                <div className="flex space-x-2 mt-2">
+                                    {[...Array(5)].map((_, index) => {
+                                        const fullStars = Math.floor(starRating);
+                                        const decimal = starRating - fullStars;
 
-                            // If the star is the first one with a partial fill
-                            if (index === fullStars && decimal > 0) {
-                                shouldFill = true; // Show partial fill for this star
-                                if (decimal >= 0.1 && decimal <= 0.4) {
-                                clipPath = "inset(0 75% 0 0)"; // About 1/4 filled
-                                } else if (decimal >= 0.5 && decimal <= 0.6) {
-                                clipPath = "inset(0 50% 0 0)"; // About half filled
-                                } else if (decimal >= 0.7 && decimal <= 0.9) {
-                                clipPath = "inset(0 25% 0 0)"; // About 3/4 filled
-                                }
-                            }
+                                        let clipPath = "none";
+                                        let shouldFill = index < fullStars;
 
-                            return (
-                                <div key={index} className="relative w-6 h-6">
-                                {/* Gray background star */}
-                                <Star color="gray" fill="gray" className="absolute inset-0" />
+                                        // If the star is the first one with a partial fill
+                                        if (index === fullStars && decimal > 0) {
+                                            shouldFill = true; // Show partial fill for this star
+                                            if (decimal >= 0.1 && decimal <= 0.4) {
+                                                clipPath = "inset(0 75% 0 0)"; // About 1/4 filled
+                                            } else if (decimal >= 0.5 && decimal <= 0.6) {
+                                                clipPath = "inset(0 50% 0 0)"; // About half filled
+                                            } else if (decimal >= 0.7 && decimal <= 0.9) {
+                                                clipPath = "inset(0 25% 0 0)"; // About 3/4 filled
+                                            }
+                                        }
 
-                                {/* Yellow foreground star with dynamic clipPath */}
-                                {shouldFill && (
-                                    <Star
-                                    color="yellow"
-                                    fill="yellow"
-                                    className="absolute inset-0"
-                                    style={{ clipPath }}
-                                    />
-                                )}
+                                        return (
+                                            <div key={index} className="relative w-6 h-6">
+                                                {/* Gray background star */}
+                                                <Star color="gray" fill="gray" className="absolute inset-0" />
+
+                                                {/* Yellow foreground star with dynamic clipPath */}
+                                                {shouldFill && (
+                                                    <Star
+                                                        color="yellow"
+                                                        fill="yellow"
+                                                        className="absolute inset-0"
+                                                        style={{ clipPath }}
+                                                    />
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            );
-                            })}
+                            </div>
+
+                            {/* Watch Trailer Button */}
+                            <div className="flex flex-col justify-center items-center md:items-start">
+                                <Link to={`/watch/${id}`} className="bg-gray-500/70 text-white rounded py-2 px-2 hover:bg-gray-500">
+                                    Watch Trailer HERE!
+                                </Link>
+                            </div>
                         </div>
+
 
                         {/* Cast */}
                         {castMember.cast.length > 0 && (
@@ -199,14 +213,14 @@ export const MoreInfoPage = () => {
                             <h3 className="text-4xl font-bold mb-4">Cast</h3>
                             <div className="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide" ref={castSliderRef}>
                             {castMember.cast.map((actor) => (
-                                <Link to={"/actor/" + actor.id} key={actor.id} className="w-32 flex-none hover:text-rose-300">
+                                <div /*to={{pathname: "/actor/" + actor.id, state: {knownFor: getKnownFor(actor.id)}}}*/ key={actor.id} className="w-32 flex-none hover:text-rose-300">
                                 <img src={actor.profile_path ? ORIGINAL_IMG_BASE_URL + actor.profile_path : "/unavailable.jpg"}
                                     alt={actor.name}
                                     className="w-full h-auto rounded-lg transition-transform duration-300 ease-in-out hover:scale-90"
                                 />
                                 <h4 className="mt-2 text-lg font-semibold text-center">{actor.name}</h4>
                                 <p className="text-center text-sm">{actor.character}</p>
-                                </Link>
+                                </div>
                             ))}
                             </div>
 
@@ -225,7 +239,7 @@ export const MoreInfoPage = () => {
                         alt="Poster image"
                         className="max-h-[700px] w-full object-cover rounded-md"
                         />
-                        <h1 className="text-center text-xl mt-3 font-extrabold italic">"{content.tagline}"</h1>
+                        <h1 className="text-center text-xl mt-3 font-extrabold italic">{content.tagline ? `"${content.tagline}"` : null}</h1>
                     </div>
                 </div>
                 
@@ -261,25 +275,32 @@ export const MoreInfoPage = () => {
                 <div className="mt-12 max-w-5xl mx-auto relative">
                     <h2 className="text-4xl font-bold mb-8">Reviews</h2>
                     {reviewContent.results.length === 0 ? (
-                        <p className="mt-4 text-rose-200 ">No reviews available at this time.</p>
+                        <p className="mt-4 text-rose-200">No reviews available at this time.</p>
                     ) : (
-                        // to display reviews per person
                         <div className="flex items-center justify-between w-full">
                             {/* Left Chevron */}
                             <ChevronLeft
-                                onClick={currentReviewIndex > 0 ? goToPrevReview : null} // Disable onClick if first review
+                                onClick={currentReviewIndex > 0 ? goToPrevReview : null}
                                 className={`w-8 h-8 cursor-pointer bg-red-600 text-white rounded-full flex-shrink-0 ${currentReviewIndex === 0 ? 'cursor-not-allowed opacity-50' : ''}`}
                             />
 
-                            {/* Current Review https://image.tmdb.org/t/p/w200/xy44UvpbTgzs9kWmp4C3fEaCl5h.png */}
-                            <div ref={sliderRef} className="max-w-3xl">
-                                <h3 className="text-2xl font-bold mb-4 hover:underline flex items-center justify-between">
-                                    <img src={`https://image.tmdb.org/t/p/w200/${reviewContent.results[currentReviewIndex].author_details.avatar_path}`}
-                                        alt={`${reviewContent.results[currentReviewIndex].author} Avatar`}
-                                        className="w-20 h-20 rounded-full"
-                                    />
-                                    <span className="text-right">{reviewContent.results[currentReviewIndex].author_details.username}</span>
-                                </h3>
+                            {/* Current Review */}
+                            <div ref={sliderRef} className="max-w-3xl w-full">
+                                {/* Avatar and Username */}
+                                <div className="flex items-center justify-between w-full mb-4">
+                                    <div className="flex items-center">
+                                        <img
+                                            src={`https://image.tmdb.org/t/p/w200/${reviewContent.results[currentReviewIndex].author_details.avatar_path}`}
+                                            alt={`${reviewContent.results[currentReviewIndex].author} Avatar`}
+                                            className="w-20 h-20 rounded-full mr-4"
+                                        />
+                                    </div>
+                                    <span className="text-lg font-bold text-right">
+                                        {reviewContent.results[currentReviewIndex].author_details.username}
+                                    </span>
+                                </div>
+
+                                {/* Review Content */}
                                 <p className="text-lg">
                                     {expandedIndex === currentReviewIndex || reviewContent.results[currentReviewIndex].content.length <= 300
                                         ? reviewContent.results[currentReviewIndex].content
@@ -290,54 +311,65 @@ export const MoreInfoPage = () => {
                                         </button>
                                     )}
                                 </p>
+
+                                {/* Date and Rating */}
                                 <p className="mt-4 text-rose-200 text-sm">
                                     {new Date(reviewContent.results[currentReviewIndex].created_at).toLocaleDateString()}
-                                    {" | Rated: "}{reviewContent.results[currentReviewIndex].author_details.rating}{"/10"}
-                                </p>
-                                <div className="flex space-x-3 mt-2">
-                                    {[...Array(5)].map((_, index) => {
-                                    const fullStars = Math.floor(reviewStarRating);
-                                    const decimal = reviewStarRating - fullStars;
-
-                                    let clipPath = "none";
-                                    let shouldFill = index < fullStars;
-
-                                    if (index === fullStars && decimal > 0) {
-                                        shouldFill = true;
-                                        if (decimal >= 0.1 && decimal <= 0.4) {
-                                        clipPath = "inset(0 75% 0 0)";
-                                        } else if (decimal >= 0.5 && decimal <= 0.6) {
-                                        clipPath = "inset(0 50% 0 0)";
-                                        } else if (decimal >= 0.7 && decimal <= 0.9) {
-                                        clipPath = "inset(0 25% 0 0)";
-                                        }
+                                    {" | Rated: "}
+                                    {reviewContent.results[currentReviewIndex].author_details.rating
+                                        ? `${reviewContent.results[currentReviewIndex].author_details.rating}/10`
+                                        : "N/A"
                                     }
+                                </p>
 
-                                    return (
-                                        <div key={index} className="relative w-4 h-4">
-                                        <Star color="gray" fill="gray" className="absolute inset-0" />
-                                        {shouldFill && (
-                                            <Star
-                                            color="yellow"
-                                            fill="yellow"
-                                            className="absolute inset-0"
-                                            style={{ clipPath }}
-                                            />
-                                        )}
-                                        </div>
-                                    );
-                                    })}
-                                </div>
+                                {/* Star Rating */}
+                                {reviewContent.results[currentReviewIndex].author_details.rating && (
+                                    <div className="flex space-x-3 mt-2">
+                                        {[...Array(5)].map((_, index) => {
+                                            const fullStars = Math.floor(reviewStarRating);
+                                            const decimal = reviewStarRating - fullStars;
+
+                                            let clipPath = "none";
+                                            let shouldFill = index < fullStars;
+
+                                            if (index === fullStars && decimal > 0) {
+                                                shouldFill = true;
+                                                if (decimal >= 0.1 && decimal <= 0.4) {
+                                                    clipPath = "inset(0 75% 0 0)";
+                                                } else if (decimal >= 0.5 && decimal <= 0.6) {
+                                                    clipPath = "inset(0 50% 0 0)";
+                                                } else if (decimal >= 0.7 && decimal <= 0.9) {
+                                                    clipPath = "inset(0 25% 0 0)";
+                                                }
+                                            }
+
+                                            return (
+                                                <div key={index} className="relative w-4 h-4">
+                                                    <Star color="gray" fill="gray" className="absolute inset-0" />
+                                                    {shouldFill && (
+                                                        <Star
+                                                            color="yellow"
+                                                            fill="yellow"
+                                                            className="absolute inset-0"
+                                                            style={{ clipPath }}
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Right Chevron */}
                             <ChevronRight
-                                onClick={currentReviewIndex < reviewContent.results.length - 1 ? goToNextReview : null} // Disable onClick if last review
+                                onClick={currentReviewIndex < reviewContent.results.length - 1 ? goToNextReview : null}
                                 className={`w-8 h-8 cursor-pointer bg-red-600 text-white rounded-full flex-shrink-0 ${currentReviewIndex === reviewContent.results.length - 1 ? 'cursor-not-allowed opacity-50' : ''}`}
                             />
                         </div>
                     )}
                 </div>
+
             </div>
         </div>
     )

@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 
 import ActorPage from "./pages/ActorPage";
 import MoreInfoPage from "./pages/MoreInfoPage.jsx";
+import AccountPage from "./pages/AccountPage.jsx";
 
 function App() {
   const {user, isCheckingAuth, authCheck} = useAuthStore();
@@ -58,6 +59,8 @@ function App() {
       <Route path="/actor/:id" element={user ? <ActorPage/> : <Navigate to={"/"}/>}/>
 
       <Route path="/moreinfo/:id" element={user ? <MoreInfoPage/> : <Navigate to={"/"}/>}/>
+
+      <Route path="/account" element={user ? <AccountPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>

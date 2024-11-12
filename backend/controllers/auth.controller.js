@@ -138,3 +138,46 @@ export async function authCheck(req, res) {
         res.status(200).json({success:false, message:"Internal server error"});
     }
 }
+
+export async function updateProfile(req, res) {
+    try {
+        const userId = req.user._id; // Assuming user ID is attached by `protectRoute` middleware
+        const { username, email, image } = req.body;
+
+        // Validate input
+        if (!username || !email) {
+            return res.status(400).json({ success: false, message: "Username and email are required" });
+        }
+
+        // Check if the username is already taken by another user
+        const existingUserByUsername = await User.findOne({ username });
+        if (existingUserByUsername && existingUserByUsername._id.toString() !== userId.toString()) {
+            return res.status(400).json({ success: false, message: "Username already taken" });
+        }
+
+        // Check if the email is already taken by another user
+        const existingUserByEmail = await User.findOne({ email });
+        if (existingUserByEmail && existingUserByEmail._id.toString() !== userId.toString()) {
+            return res.status(400).json({ success: false, message: "Email already in use" });
+        }
+
+        // Update user data
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { username, email, image },
+            { new: true, runValidators: true }
+        );
+
+        // Return updated user data without the password field
+        res.status(200).json({
+            success: true,
+            user: {
+                ...updatedUser._doc,
+                password: ""  // Exclude the password field from the response
+            }
+        });
+    } catch (error) {
+        console.log("Error in updateProfile controller", error.message);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}

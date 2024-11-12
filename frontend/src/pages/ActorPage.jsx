@@ -13,7 +13,7 @@ export const ActorPage = () => {
     const [showBio, setShowBio] = useState(false);
 
     const location = useLocation();
-    const { knownFor } = location.state || {}; // Ensure knownFor is passed from SearchPage
+    const { knownFor = [] } = location.state || {}; // Ensure knownFor is passed from SearchPage
 
     useEffect(() => {
         const fetchActorDetails = async () => {
@@ -56,96 +56,122 @@ export const ActorPage = () => {
 
     return (
         <div className="bg-black min-h-screen text-white">
-            <Navbar />
-            {/* Profile picture and name */}
-            <div className="flex flex-col items-center">
-                <img src={`https://image.tmdb.org/t/p/original${actorDetails.profile_path}`}
+          <Navbar />
+            {/* Main container for profile and biography/details in grid */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 mt-8">
+            
+            {/* Left side: Profile picture and name */}
+            <div className="flex flex-col items-center md:items-start">
+              <img src={`https://image.tmdb.org/t/p/original${actorDetails.profile_path}`}
                 alt={actorDetails.name}
-                className="w-64 h-80 rounded-md mb-4 mt-3"/>
-                <h1 className="text-3xl font-bold mb-2">{actorDetails.name}</h1>
-                <p className="italic text-rose-400">{actorDetails.known_for_department}</p>
+                className="w-64 h-96 rounded-lg mb-4 mt-3"
+              />
+                <div className="text-center md:text-center md:ml-7">
+                    <h1 className="text-3xl font-bold mb-2">{actorDetails.name}</h1>
+                    <p className="italic text-rose-400">{actorDetails.known_for_department}</p>
+                </div>
             </div>
-        
-            {/* Biography and other details */}
-            <div className="mt-8 max-w-7xl mx-auto px-4 sm:px-6">
+            
+            {/* Right side: Biography and details */}
+            <div className="space-y-8">
+                {/* Biography */}
                 {actorDetails.biography ? (
-                    <div className="mb-4">
-                        <h2 className="text-2xl font-semibold mb-2">Biography</h2>
-                        <p className="text-gray-300">
-                            {showBio ? actorDetails.biography : `${actorDetails.biography.slice(0, 400)}`}
-                            {" "}
-                            {actorDetails.biography.length > 400 && (
-                                <button
-                                    onClick={() => setShowBio(!showBio)}
-                                    className="text-blue-600 hover:underline"
-                                >
-                                    {showBio ? "See Less" : "See More"}
-                                </button>
-                            )}
+                <div className="mb-4">
+                    <h2 className="text-2xl font-semibold mb-2">Biography</h2>
+                    <p className="text-gray-300">
+                    {showBio ? actorDetails.biography : `${actorDetails.biography.slice(0, 400)}`}
+                    {" "}
+                    {actorDetails.biography.length > 400 && (
+                        <button
+                        onClick={() => setShowBio(!showBio)}
+                        className="text-blue-600 hover:underline"
+                        >
+                        {showBio ? "See Less" : "See More"}
+                        </button>
+                    )}
+                    </p>
+                </div>
+                ) : (
+                <p className="text-gray-300">No biography available.</p>
+                )}
+        
+                {/* Details */}
+                <div>
+                <h2 className="text-2xl font-semibold mb-2">Details</h2>
+                <ul className="list-disc ml-6 text-gray-300">
+                    <li><strong>Birthday:</strong> {actorDetails.birthday || "N/A"}</li>
+                    {actorDetails.deathday && (
+                    <li><strong>Death Date:</strong> {actorDetails.deathday}</li>
+                    )}
+                    <li><strong>Place of Birth:</strong> {actorDetails.place_of_birth || "N/A"}</li>
+                    <li><strong>Gender:</strong> {actorDetails.gender === 1 ? "Female" : "Male"}</li>
+                    <li>
+                    <strong>Learn More:</strong>{" "}
+                    <a
+                        href={`https://www.imdb.com/name/${actorDetails.imdb_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-blue-600 hover:underline"
+                    >
+                        Click Here
+                    </a>
+                    </li>
+                    <li><strong>Also Known As:</strong> {actorDetails.also_known_as?.join(", ") || "N/A"}</li>
+                    <li><strong>Popularity:</strong> {actorDetails.popularity}</li>
+                </ul>
+                </div>
+            </div>
+            </div>
+      
+            {/* Known For Section */}
+            {knownFor && knownFor.length > 0 && (
+                <div className="mt-8 max-w-7xl mx-auto px-4 sm:px-6">
+                <h2 className="text-2xl font-semibold mb-2 text-center">
+                    {`${actorDetails.name.split(" ")[0]}${actorDetails.name.split(" ")[0].endsWith("s") ? "'" : "'s"} Most Notable`}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    {knownFor.map((work, index) => (
+                    <div
+                        key={index}
+                        className="flex flex-col items-center bg-gray-800 p-3 rounded max-w-xs mx-auto h-full"
+                    >
+                        <img
+                        src={`${ORIGINAL_IMG_BASE_URL}${work.poster_path}`}
+                        alt={work.title || work.name}
+                        className="w-64 h-80 rounded object-cover mb-2"
+                        />
+                        <h3 className="mt-2 text-lg font-bold text-center w-52">
+                        {work.title || work.name}
+                        </h3>
+                        <p className="text-gray-400 text-sm text-center">
+                        {work.vote_average.toFixed(1)}/10
+                        </p>
+                        <p className="text-gray-400 text-center">
+                        {work.release_date || work.first_air_date}
                         </p>
                     </div>
-                ) : (
-                    <p className="text-gray-300">No biography available.</p>
-                )}
-        
-                <div className="mt-7">
-                    <h2 className="text-2xl font-semibold mb-2">Details</h2>
-                    <ul className="list-disc ml-6 text-gray-300">
-                        <li><strong>Birthday:</strong> {actorDetails.birthday || "N/A"}</li>
-                        {actorDetails.deathday && (
-                        <li>
-                            <strong>Death Date:</strong> {actorDetails.deathday}
-                        </li>
-                        )}
-                        <li><strong>Place of Birth:</strong> {actorDetails.place_of_birth || "N/A"}</li>
-                        <li><strong>Gender:</strong> {actorDetails.gender === 1 ? "Female" : "Male"}</li>
-                        <li><strong>Learn More:</strong>{" "}
-                            <a href={`https://www.imdb.com/name/${actorDetails.imdb_id}`} target="_blank"
-                            rel="noopener noreferrer" className="hover:text-blue-600 hover:underline">{"Click Here"}</a>
-                        </li>
-                        <li><strong>Also Known As:</strong> {actorDetails.also_known_as?.join(", ") || "N/A"}</li>
-                        <li><strong>Popularity:</strong> {actorDetails.popularity}</li>
-                    </ul>
+                    ))}
                 </div>
-
-                {/* Known For Section */}
-                {knownFor && knownFor.length > 0 && (
-                    <div className="mt-8 max-w-7xl mx-auto px-4 sm:px-6">
-                        <h2 className="text-2xl font-semibold mb-2 text-center">{`${actorDetails.name.split(" ")[0]}${actorDetails.name.split(" ")[0].endsWith('s') ? "'" : "'s"}`} Most Notable</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 ">
-                            {knownFor.map((work, index) => (
-                                <div to={`/watch/${work.id}`} key={index}
-                                    className="flex flex-col items-center bg-gray-800 p-3 rounded max-w-xs mx-auto h-full">
-                                    <img src={`${ORIGINAL_IMG_BASE_URL}${work.poster_path}`}
-                                        alt={work.title || work.name}
-                                        className="w-64 h-80 rounded object-cover mb-2"
-                                    />
-                                    <h3 className="mt-2 text-lg font-bold text-center w-52">
-                                        {work.title || work.name}
-                                    </h3>
-                                    <p className="text-gray-400 text-sm text-center">
-                                        {work.vote_average.toFixed(1)}/10
-                                    </p>
-                                    <p className="text-gray-400 text-center">{work.release_date || work.first_air_date}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                </div>
+            )}
         
-                {actorDetails.homepage && (
-                    <div className="mt-4">
-                        <h2 className="text-2xl font-semibold mb-2">Official Website</h2>
-                        <a href={actorDetails.homepage} target="_blank"
-                        rel="noopener noreferrer" className="hover:text-blue-600">
-                            Visit Website
-                        </a>
-                    </div>
-                )}
-            </div>
+            {/* Official Website */}
+            {actorDetails.homepage && (
+                <div className="mt-4 max-w-7xl mx-auto px-4 sm:px-6">
+                <h2 className="text-2xl font-semibold mb-2">Official Website</h2>
+                <a
+                    href={actorDetails.homepage}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-600"
+                >
+                    Visit Website
+                </a>
+                </div>
+            )}
         </div>
-    );
+      );
+      
 }
 
 export default ActorPage
