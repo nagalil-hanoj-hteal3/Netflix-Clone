@@ -1,0 +1,3 @@
+"dev": "node --watch backend/server.js"
+
+Replace the above for "dev", "start", and "build"
