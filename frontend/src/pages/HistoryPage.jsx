@@ -47,9 +47,10 @@ export const HistoryPage = () => {
     const handleDelete = async (entry, suppressToast = false) => {
         try {
             await axios.delete(`/api/v1/search/history/${entry.id}`);
+            console.log("test: ", entry)
             setSearchHistory((prevHistory) => prevHistory.filter((item) => item.id !== entry.id));
             if (!suppressToast) {
-                toast.success("Deleted search item");
+                toast.success(`Deleted ${entry.title}`);
             }
         } catch (error) {
             if (!suppressToast) {
@@ -136,8 +137,8 @@ export const HistoryPage = () => {
                     <select className="bg-gray-700 text-white px-4 py-2 rounded mr-4"
                     onChange={(e) => handleSortChange(e.target.value)}
                     value={sortOrder}>
-                        <option value="title-asc">Sort by Title (Asc)</option>
-                        <option value="title-desc">Sort by Title (Desc)</option>
+                        <option value="title-asc">Sort by Name (Asc)</option>
+                        <option value="title-desc">Sort by Name (Desc)</option>
                         <option value="date-asc">Sort by Date (Asc)</option>
                         <option value="date-desc">Sort by Date (Desc)</option>
                     </select>

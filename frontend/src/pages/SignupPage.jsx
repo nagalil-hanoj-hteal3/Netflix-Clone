@@ -15,7 +15,7 @@ function SignupPage() {
     const [backgroundClass, setBackgroundClass] = useState("hero-bg");
     const [fadeClass, setFadeClass] = useState("fade-in");
 
-    const {signup} = useAuthStore();
+    const {signup, isSigningUp} = useAuthStore();
 
     const handleSignUp = (e) => {
         e.preventDefault();
@@ -110,8 +110,9 @@ function SignupPage() {
                     </div>
 
                     <button className="w-full py-2 bg-red-600 text-white font-semibold rounded-md
-                        hover:bg-red-800">
-                        Sign Up
+                        hover:bg-red-800"
+                        disabled={isSigningUp}>
+                        {isSigningUp ? "Loading..." : "Sign Up"}
                     </button>
 
                     <div className="text-center text-gray-400">

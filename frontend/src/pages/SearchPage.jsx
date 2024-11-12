@@ -19,9 +19,15 @@ export const SearchPage = () => {
 		const urlParams = new URLSearchParams(search);
 		const tabFromUrl = urlParams.get("tab");
 		if (tabFromUrl) {
-		setActiveTab(tabFromUrl);
-		setContentType(tabFromUrl);}
+			setActiveTab(tabFromUrl);
+			setContentType(tabFromUrl);
+		}
 	}, [search, setContentType]);
+
+	// Clear search results when activeTab changes
+	useEffect(() => {
+		setSearchResults([]);
+	}, [activeTab, setSearchResults]);
 
 	// Handle tab click and update the active tab
 	const handleTabClick = (tab) => {
@@ -74,28 +80,28 @@ export const SearchPage = () => {
 						if (!result.poster_path && !result.profile_path) return null;
 
 						return (
-						<div key={result.id} className="bg-gray-800 p-4 rounded">
-							{activeTab === "person" ? (
-							<Link to={`/actor/${result.id}`} state={{ knownFor: result.known_for }} className="flex flex-col items-center">
-								<img src={ORIGINAL_IMG_BASE_URL + result.profile_path} alt={result.name} className="max-h-96 rounded mx-auto" />
-								<h2 className="mt-2 text-xl font-bold">{result.name}</h2>
-							</Link>
-							) : (
-							<Link
-								to={"/watch/" + result.id}
-								onClick={() => {
-								setContentType(activeTab);
-								}}
-							>
-								<img
-								src={ORIGINAL_IMG_BASE_URL + result.poster_path}
-								alt={result.title || result.name}
-								className="w-full h-auto rounded"
-								/>
-								<h2 className="mt-2 text-xl font-bold">{result.title || result.name}</h2>
-							</Link>
-							)}
-						</div>
+							<div key={result.id} className="bg-gray-800 p-4 rounded">
+								{activeTab === "person" ? (
+									<Link to={`/actor/${result.id}`} state={{ knownFor: result.known_for }} className="flex flex-col items-center">
+										<img src={ORIGINAL_IMG_BASE_URL + result.profile_path} alt={result.name} className="max-h-96 rounded mx-auto" />
+										<h2 className="mt-2 text-xl font-bold">{result.name}</h2>
+									</Link>
+								) : (
+									<Link
+										to={"/watch/" + result.id}
+										onClick={() => {
+											setContentType(activeTab);
+										}}
+									>
+										<img
+											src={ORIGINAL_IMG_BASE_URL + result.poster_path}
+											alt={result.title || result.name}
+											className="w-full h-auto rounded"
+										/>
+										<h2 className="mt-2 text-xl font-bold">{result.title || result.name}</h2>
+									</Link>
+								)}
+							</div>
 						);
 					})}
 				</div>
