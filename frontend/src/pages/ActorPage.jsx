@@ -6,6 +6,7 @@ import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import Navbar from "../components/Navbar";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useContentStore } from "../store/content";
 
 const calculateAge = (birthday) => {
     const birthDate = new Date(birthday);
@@ -34,6 +35,9 @@ export const ActorPage = () => {
     const movieScrollRef = useRef();
     const tvScrollRef = useRef();
     const imageScrollRef = useRef();
+
+    // console.log("test: ", actorTVs);
+    console.log("test: ", actorDetails);
 
     useEffect(() => {
         const fetchActorDetails = async () => {
@@ -143,34 +147,34 @@ export const ActorPage = () => {
                             <h2 className="text-3xl font-semibold mb-2">Details</h2>
                             <ul className="list-disc ml-6 text-gray-300 space-y-2">
                                 <li>
-                                    <strong>Birthday:</strong> 
+                                    <strong>Birthday: </strong> 
                                     {actorDetails.birthday ? (
                                         <>
-                                            {actorDetails.birthday} (Age: {calculateAge(actorDetails.birthday)})
+                                            {actorDetails?.birthday} (Age: {calculateAge(actorDetails?.birthday)})
                                         </>
                                     ) : ("N/A")}
                                 </li>
-                                {actorDetails.deathday && <li><strong>Death Date:</strong> {actorDetails.deathday}</li>}
-                                <li><strong>Place of Birth:</strong> {actorDetails.place_of_birth || "N/A"}</li>
-                                <li><strong>Gender:</strong> {actorDetails.gender === 1 ? "Female" : "Male"}</li>
+                                {actorDetails?.deathday && <li><strong>Death Date:</strong> {actorDetails?.deathday}</li>}
+                                <li><strong>Place of Birth:</strong> {actorDetails?.place_of_birth || "N/A"}</li>
+                                <li><strong>Gender:</strong> {actorDetails?.gender === 1 ? "Female" : "Male"}</li>
                                 <li>
                                     <strong>Learn More:</strong>{" "}
-                                    <a href={`https://www.imdb.com/name/${actorDetails.imdb_id}`}
+                                    <a href={`https://www.imdb.com/name/${actorDetails?.imdb_id}`}
                                         target="_blank" rel="noopener noreferrer"
                                         className="text-blue-600 hover:text-blue-400 underline">
                                         Click Here
                                     </a>
                                 </li>
-                                <li><strong>Also Known As:</strong> {actorDetails.also_known_as?.join(", ") || "N/A"}</li>
-                                <li><strong>Popularity:</strong> {actorDetails.popularity}</li>
+                                <li><strong>Also Known As:</strong> {actorDetails?.also_known_as?.join(", ") || "N/A"}</li>
+                                <li><strong>Popularity:</strong> {actorDetails?.popularity}</li>
                             </ul>
                         </div>
 
-                        {actorDetails.homepage && (
+                        {actorDetails?.homepage && (
                             <div className="mt-4">
                                 <h2 className="text-3xl font-semibold mb-2">Official Website</h2>
                                 <a
-                                    href={actorDetails.homepage}
+                                    href={actorDetails?.homepage}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-blue-600 hover:text-blue-400 underline"
@@ -184,43 +188,43 @@ export const ActorPage = () => {
                 </div>
 
                 {/* Scrollable Movie/TV Show/Images Sections */}
-                {[{ label: 'Movies', items: actorMovies, ref: movieScrollRef }, { label: 'TV Shows', items: actorTVs, ref: tvScrollRef }, { label: 'Images', items: actorImages, ref: imageScrollRef }]
-                .map(({ label, items, ref }, index) => (
-                    <div key={index} className="relative mt-8">
-                        <h2 className="text-3xl font-semibold mb-4 text-center">{`${actorDetails.name.split(" ")[0]}'s ${label}`}</h2>
-                        <button onClick={() => scrollLeft(ref)} className="absolute left-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600">
-                            <ChevronLeft size={24} />
-                        </button>
-                        <div ref={ref} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
-                            {items.length > 0 ? (
-                                items.map((item, idx) => (
-                                    <div key={idx} className="flex-shrink-0 w-64 h-96">
-                                        {(label === 'Movies' || label === 'TV Shows') ? (
-                                            <Link to={`/${label === 'Movies' ? 'movie' : 'tv'}/moreinfo/${item.id}`}>
+                {[{ label: 'Movies', items: actorMovies, ref: movieScrollRef }, { label: 'TV Shows', items: actorTVs, ref: tvScrollRef }, { label: 'Photo Gallery', items: actorImages, ref: imageScrollRef }]
+                    .map(({ label, items, ref }, index) => {
+                        // Filter items to include only those with a valid poster or file path
+                        const filteredItems = items.filter(item => item.poster_path || item.file_path);
+
+                        // If no valid items, skip rendering this section
+                        if (filteredItems.length === 0) return null;
+
+                        return (
+                            <div key={index} className="relative mt-8">
+                                <h2 className="text-3xl font-semibold mb-4 text-center">{`${actorDetails?.name.split(" ")[0]}'s ${label}`}</h2>
+                                <button onClick={() => scrollLeft(ref)} className="absolute left-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600">
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <div ref={ref} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
+                                    {filteredItems.map((item, idx) => (
+                                        <div key={idx} className="flex-shrink-0 w-64 h-96">
+                                            <Link
+                                                to={`/${label === 'Movies' ? 'movie' : 'tv'}/moreinfo/${item.id}`}
+                                                onClick={() => useContentStore.getState().setContentType(label === 'Movies' ? 'movie' : 'tv')}
+                                            >
                                                 <img
                                                     src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
                                                     alt={item.title || item.name || `Image ${idx + 1}`}
                                                     className="w-full h-full object-cover rounded-lg shadow-lg transform transition-all hover:scale-105"
                                                 />
                                             </Link>
-                                        ) : (
-                                            <img
-                                                src={`${ORIGINAL_IMG_BASE_URL}${item.file_path}`}
-                                                alt={`Image ${idx + 1}`}
-                                                className="w-full h-full object-cover rounded-lg shadow-lg transform transition-all hover:scale-105"
-                                            />
-                                        )}
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-center text-gray-400">No {label.toLowerCase()} available</p>
-                            )}
-                        </div>
-                        <button onClick={() => scrollRight(ref)} className="absolute right-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600">
-                            <ChevronRight size={24} />
-                        </button>
-                    </div>
-                ))}
+                                        </div>
+                                    ))}
+                                </div>
+                                <button onClick={() => scrollRight(ref)} className="absolute right-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600">
+                                    <ChevronRight size={24} />
+                                </button>
+                            </div>
+                        );
+                })}
+
             </div>
         </div>
     );
