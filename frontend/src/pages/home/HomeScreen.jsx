@@ -76,7 +76,7 @@ const HomeScreen = () => {
                         </Link>
 
                         <Link
-                            to={`/moreinfo/${trendingContent?.id}`}
+                            to={`/${contentType}/moreinfo/${trendingContent?.id}`}
                             className="bg-gray-500/70 hover:bg-gray-500 text-white py-2 px-4 rounded flex items-center"
                         >
                             <Info className="size-6 mr-2" /> More Info

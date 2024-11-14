@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReactPlayer from "react-player";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 
-const WatchPage = () => {
+export const WatchPage = () => {
     const {id} = useParams();
     // console.log(id);
     const [trailers, setTrailers] = useState([]);
@@ -85,7 +85,7 @@ const WatchPage = () => {
                     </button>
 
                     {/* Always show the More Info link */}
-                    <Link to={`/moreinfo/${id}`} className="bg-gray-500/70 text-white rounded py-2 px-2 hover:bg-gray-500">
+                    <Link to={`/${contentType}/moreinfo/${id}`} className="bg-gray-500/70 text-white rounded py-2 px-2 hover:bg-gray-500">
                         More Info About: {content.title || content.name}
                     </Link>
 
@@ -99,7 +99,7 @@ const WatchPage = () => {
                 ) : (
                     // If there are no trailers, show the More Info link only
                     <div className="flex justify-center items-center mb-4">
-                        <Link to={`/moreinfo/${id}`} className="bg-gray-500/70 text-white rounded py-2 px-2 hover:bg-gray-500">
+                        <Link to={`/${contentType}/moreinfo/${id}`} className="bg-gray-500/70 text-white rounded py-2 px-2 hover:bg-gray-500">
                             More Info About: {content.title || content.name}
                         </Link>
                     </div>

@@ -213,14 +213,14 @@ export const MoreInfoPage = () => {
                             <h3 className="text-4xl font-bold mb-4">Cast</h3>
                             <div className="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide" ref={castSliderRef}>
                             {castMember.cast.map((actor) => (
-                                <div /*to={{pathname: "/actor/" + actor.id, state: {knownFor: getKnownFor(actor.id)}}}*/ key={actor.id} className="w-32 flex-none hover:text-rose-300">
+                                <Link to={{pathname: "/actor/" + actor.id}} key={actor.id} className="w-32 flex-none hover:text-rose-300">
                                 <img src={actor.profile_path ? ORIGINAL_IMG_BASE_URL + actor.profile_path : "/unavailable.jpg"}
                                     alt={actor.name}
                                     className="w-full h-auto rounded-lg transition-transform duration-300 ease-in-out hover:scale-90"
                                 />
                                 <h4 className="mt-2 text-lg font-semibold text-center">{actor.name}</h4>
                                 <p className="text-center text-sm">{actor.character}</p>
-                                </div>
+                                </Link>
                             ))}
                             </div>
 
