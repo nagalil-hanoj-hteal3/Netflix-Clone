@@ -12,7 +12,7 @@ export const useContentStore = create((set) => ({
             return map;
         }, {});
 
-		console.log("map: ", actorMap);
+		// console.log("map: ", actorMap);
 
         return { searchResults: results, actorMap };
     }),

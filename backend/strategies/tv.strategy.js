@@ -28,6 +28,10 @@ const TVStrategy = {
     async getCast(id) {
         const data = await fetchFromTMDB(`https://api.themoviedb.org/3/tv/${id}/credits?language=en-US`);
         return data;
+    },
+    async getRecommendations(id) {
+        const data = await fetchFromTMDB(`https://api.themoviedb.org/3/tv/${id}/recommendations?language=en-US&page=1`)
+        return data.results;
     }
 }
 

@@ -2,16 +2,18 @@ import { Play, Info, SkipForward } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import { Link } from "react-router-dom";
 import useGetTrendingContent from "../../hooks/useGetTrendingContent";
-import { MOVIE_CATEGORIES, ORIGINAL_IMG_BASE_URL, TV_CATEGORIES } from "../../utils/constants";
+import { MOVIE_CATEGORIES, ORIGINAL_IMG_BASE_URL, TV_CATEGORIES, MOVIE_GENRES, TV_GENRES } from "../../utils/constants";
 import { useContentStore } from "../../store/content";
 import { MovieSlider } from "../../components/MovieSlider";
 import { useState } from "react";
+import { getGenreNames } from "../../utils/getGenreNames";
 
 const HomeScreen = () => {
     const [currentPage, setCurrentPage] = useState(1);  // Track the current page for trending content
     const { trendingContent } = useGetTrendingContent(currentPage);
     const { contentType } = useContentStore();
     const [imgLoading, setImgLoading] = useState(true);
+    const genres = contentType === "movie" ? MOVIE_GENRES : TV_GENRES;
 
     // If no trending content is available yet
     if (!trendingContent) {
@@ -28,6 +30,11 @@ const HomeScreen = () => {
         setCurrentPage((prevPage) => prevPage + 1);  // Increment the page to get the next item
         setImgLoading(true);  // Set loading to true when changing content
     };
+
+    const genre_names = trendingContent?.genre_ids ?
+        getGenreNames(trendingContent?.genre_ids, genres) : "";
+
+    // console.log("test: ", trendingContent.genre_ids);
 
     return (
         <>
@@ -58,6 +65,19 @@ const HomeScreen = () => {
                         <h1 className="mt-4 text-6xl font-extrabold text-balance text-white">
                             {trendingContent?.title || trendingContent?.name}
                         </h1>
+                        <p className="mt-4 flex flex-wrap gap-2">
+                            {genre_names ? (
+                                genre_names.split(", ").map((genre, index) => (
+                                    <span 
+                                        key={index} 
+                                        className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm mb-3"
+                                    >
+                                        {genre}
+                                    </span>
+                                ))
+                            ) : ("")}
+                        </p>
+
                         <p className="mt-2 text-lg text-white">
                             {trendingContent?.release_date?.split("-")[0] || trendingContent?.first_air_date?.split("-")[0]}{" "} 
                             | {trendingContent?.adult ? "18+" : "PG-13"}
