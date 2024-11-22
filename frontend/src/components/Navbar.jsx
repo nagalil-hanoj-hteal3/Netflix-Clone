@@ -20,7 +20,7 @@ const Navbar = () => {
                 </Link>
 
                 {/* Desktop navbar items */}
-                <div className="hidden sm:flex gap-2 items-center">
+                <div className="hidden sm:flex gap-2 items-center text-white">
                     <Link to="/" className="hover:underline" onClick={() => setContentType("movie")}>Movies</Link>
                     <Link to="/" className="hover:underline" onClick={() => setContentType("tv")}>TV Shows</Link>
                     <Link to="/history" className="hover:underline">Search History</Link>
@@ -29,7 +29,7 @@ const Navbar = () => {
 
             <div className="flex gap-2 items-center z-50">
                 <Link to="/search" onClick={() => isMobileMenuOpen && toggleMobileMenu()}>
-                    <Search className="size-6 cursor-pointer" />
+                    <Search className="size-6 cursor-pointer text-white" />
                 </Link>
                 <Link to="/account" onClick={() => isMobileMenuOpen && toggleMobileMenu()}>
                     <img src={user.image} alt="Avatar" className="h-8 rounded cursor-pointer" />
@@ -37,18 +37,18 @@ const Navbar = () => {
                  {/* Mobile hamburger menu */}
                  <div className="sm:hidden">
                     <button className="p-2" onClick={toggleMobileMenu}>
-                        <Menu className="size-6 cursor-pointer" />
+                        <Menu className="size-6 cursor-pointer text-white" />
                     </button>
                 </div>
-                <LogOut className="size-6 cursor-pointer" onClick={logout} />
+                <LogOut className="size-6 cursor-pointer text-white" onClick={logout} />
             </div>
 
             {/* Mobile navbar items */}
             {isMobileMenuOpen && (
-                <div className="w-full sm:hidden mt-4 z-50 bg-black text-white border rounded border-gray-800 absolute top-20 left-0">
-                    <Link to="/" className="block hover:underline p-2" onClick={() => { setContentType("movie"); toggleMobileMenu(); }}>Movies</Link>
-                    <Link to="/" className="block hover:underline p-2" onClick={() => { setContentType("tv"); toggleMobileMenu(); }}>TV Shows</Link>
-                    <Link to="/history" className="block hover:underline p-2" onClick={toggleMobileMenu}>Search History</Link>
+                <div className="w-full sm:hidden mt-4 z-50 bg-slate-900 text-white border rounded border-gray-800 absolute top-20 left-0">
+                    <Link to="/" className="block hover:underline hover:bg-slate-600 p-2" onClick={() => { setContentType("movie"); toggleMobileMenu(); }}>Movies</Link>
+                    <Link to="/" className="block hover:underline hover:bg-slate-600 p-2" onClick={() => { setContentType("tv"); toggleMobileMenu(); }}>TV Shows</Link>
+                    <Link to="/history" className="block hover:underline hover:bg-slate-600 p-2" onClick={toggleMobileMenu}>Search History</Link>
                 </div>
             )}
         </header>

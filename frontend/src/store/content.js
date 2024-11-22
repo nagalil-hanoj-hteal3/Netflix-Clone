@@ -16,4 +16,13 @@ export const useContentStore = create((set) => ({
 
         return { searchResults: results, actorMap };
     }),
+    setContentTypeFromPath: (path) => {
+        if (path.includes('/movie/')) {
+            set({ contentType: 'movie' });
+        } else if (path.includes('/tv/')) {
+            set({ contentType: 'tv' });
+        } else if (path.includes('/actor/')) {
+            set({ contentType: 'person' });
+        }
+    }
 }));

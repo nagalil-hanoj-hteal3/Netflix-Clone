@@ -96,10 +96,6 @@ export const ActorPage = () => {
     const tvScrollRef = useRef();
     const imageScrollRef = useRef();
 
-    // console.log("test: ", actorTVs);
-    // console.log("test: ", actorDetails);
-    // console.log("first: ", modalContent);
-
     const fetchActorDetails = async () => {
         try {
             const response = await axios.get(`/api/v1/actor/${id}`);
@@ -192,13 +188,13 @@ export const ActorPage = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-8 space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8">
                     <div className="flex flex-col items-center md:items-start">
-                        <img src={`${ORIGINAL_IMG_BASE_URL}${actorDetails.profile_path}`}
-                            alt={actorDetails.name}
+                        <img src={`${ORIGINAL_IMG_BASE_URL}${actorDetails?.profile_path}`}
+                            alt={actorDetails?.name}
                             className="w-64 h-96 rounded-lg shadow-2xl transform transition-all hover:scale-105 mb-4 mt-3 items-center"
                         />
                         <div className="text-center md:text-center ">
-                            <h1 className="text-4xl font-extrabold mb-2">{actorDetails.name}</h1>
-                            <p className="italic text-rose-400 text-xl">{actorDetails.known_for_department}</p>
+                            <h1 className="text-4xl font-extrabold mb-2">{actorDetails?.name}</h1>
+                            <p className="italic text-rose-400 text-xl">{actorDetails?.known_for_department}</p>
                         </div>
                     </div>
 
@@ -206,8 +202,8 @@ export const ActorPage = () => {
                         <div className="mb-4">
                             <h2 className="text-3xl font-semibold mb-2">Biography</h2>
                             <p className="text-gray-300">
-                                {showBio ? actorDetails.biography : `${actorDetails.biography.slice(0, 400)}`}
-                                {actorDetails.biography.length > 400 && (
+                                {showBio ? actorDetails?.biography : `${actorDetails?.biography.slice(0, 400)}`}
+                                {actorDetails?.biography.length > 400 && (
                                     <button
                                         onClick={() => setShowBio(!showBio)}
                                         className="text-blue-600 hover:underline ml-2"
@@ -223,7 +219,7 @@ export const ActorPage = () => {
                             <ul className="list-disc ml-6 text-gray-300 space-y-2">
                                 <li>
                                     <strong>Birthday: </strong> 
-                                    {actorDetails.birthday ? (
+                                    {actorDetails?.birthday ? (
                                         <>
                                             {actorDetails?.birthday} (Age: {calculateAge(actorDetails?.birthday, actorDetails?.deathday)})
                                         </>

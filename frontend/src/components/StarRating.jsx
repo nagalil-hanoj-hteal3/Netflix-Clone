@@ -1,7 +1,7 @@
 import { Star } from "lucide-react";
 
 // eslint-disable-next-line react/prop-types
-const StarRating = ({ rating, maxStars = 5, size = "w-4 h-4" }) => {
+const StarRating = ({ rating, maxStars = "", size = "" }) => {
     const fullStars = Math.floor(rating); // Number of full stars
     const decimal = rating - fullStars;  // Remaining decimal part of the star
 

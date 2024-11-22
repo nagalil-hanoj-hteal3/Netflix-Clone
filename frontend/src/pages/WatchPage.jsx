@@ -67,8 +67,6 @@ export const WatchPage = () => {
         </div>
     )
 
-    // console.log("test", content);
-
     return (
         // <Navbar/>
         <div className="bg-black min-h-screen text-white">

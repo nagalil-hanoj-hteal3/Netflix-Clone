@@ -10,4 +10,4 @@ export const WatchPageSkeleton = () => {
   )
 }
 
-export default WatchPageSkeleton
+export default WatchPageSkeleton;
