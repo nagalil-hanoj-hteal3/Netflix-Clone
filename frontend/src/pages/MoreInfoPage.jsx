@@ -7,20 +7,20 @@ import Navbar from "../components/Navbar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ORIGINAL_IMG_BASE_URL, SMALL_IMG_BASE_URL } from "../utils/constants";
 import { formatReleaseDate } from "../utils/dateFunction";
-// import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
+import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import StarRating from "../components/StarRating";
 import InfoIconWithTooltip from "../components/InfoIconWithTooltip";
 import TV_Modal from "../components/TV_Modal";
 
 export const MoreInfoPage = () => {
 
-    const {type, id} = useParams();
-    // const [loading, setLoading] = useState(true);
+    const {id} = useParams();
+    const [loading, setLoading] = useState(true);
     const [content, setContent] = useState(null);
     const [similarContent, setSimilarContent] = useState([]);
     const {contentType} = useContentStore();
     // console.log("test: ", contentType);
-    console.log('Route params:', { type, id });
+    // console.log('Route params:', { type, id });
 
     // added
     const [reviewContent, setReviewContent] = useState({ results: []});
@@ -53,6 +53,7 @@ export const MoreInfoPage = () => {
     // combined all the following into this use effect rather than creating multiple use effects
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             const endpoints = [
             `/api/v1/content/${contentType}/${id}/details`,
             `/api/v1/content/${contentType}/${id}/similar`,
@@ -77,9 +78,9 @@ export const MoreInfoPage = () => {
             } catch (error) {
                 console.error("Failed to fetch one or more resources", error);
             }
-            //  finally {
-            //     setLoading(false);
-            // }
+             finally {
+                setLoading(false);
+            }
         };
       
         fetchData();
@@ -173,11 +174,11 @@ export const MoreInfoPage = () => {
         }
     }, []);
 
-    // if(loading) return (
-    //     <div className="min-h-screen bg-black p-10">
-    //         <WatchPageSkeleton/>
-    //     </div>
-    // )
+    if(loading) return (
+        <div className="min-h-screen bg-black p-10">
+            <WatchPageSkeleton/>
+        </div>
+    )
 
     const goToNextReview = () => {
         if(currentReviewIndex < reviewContent?.total_results - 1){
@@ -223,8 +224,8 @@ export const MoreInfoPage = () => {
     }) || [];
 
     return (
-        <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 min-h-screen text-white">
-            <div className="mx-auto container px-4 py-2 h-full">
+        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
+            <div className="min-[0px]:px-4 sm:px-0 mx-auto container h-full">
                 <Navbar/>
                 {/* movie details */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 max-w-6xl mx-auto">
@@ -447,7 +448,7 @@ export const MoreInfoPage = () => {
 
                 {/*Reviews portion*/}
 
-                <div className="mt-12 max-w-5xl mx-auto relative">
+                <div className="mt-10 max-w-5xl mx-auto relative py-4">
                     <h2 className="text-4xl font-bold mb-8">Reviews</h2>
                     {reviewContent?.results.length === 0 ? (
                         <p className="mt-4 text-white italic">No reviews available at this time.</p>
@@ -524,14 +525,14 @@ export const MoreInfoPage = () => {
 
                                 {/* Right Chevron */}
                                 <ChevronRight
-              onClick={currentReviewIndex < reviewContent?.results.length - 1 ? goToNextReview : null}
-              className={`w-8 h-8 transition-opacity duration-300 cursor-pointer 
-                bg-[#000035] text-white rounded-full z-20
-                ${currentReviewIndex === reviewContent?.results.length - 1 ? 'opacity-0' : 'opacity-0'}
-                ${currentReviewIndex < reviewContent?.results.length - 1 ? 'group-hover:opacity-100' : 'cursor-not-allowed'}
-              `}
-              disabled={currentReviewIndex === reviewContent?.results.length - 1}
-            />
+                                    onClick={currentReviewIndex < reviewContent?.results.length - 1 ? goToNextReview : null}
+                                    className={`w-8 h-8 transition-opacity duration-300 cursor-pointer 
+                                        bg-[#000035] text-white rounded-full z-20
+                                        ${currentReviewIndex === reviewContent?.results.length - 1 ? 'opacity-0' : 'opacity-0'}
+                                        ${currentReviewIndex < reviewContent?.results.length - 1 ? 'group-hover:opacity-100' : 'cursor-not-allowed'}
+                                    `}
+                                    disabled={currentReviewIndex === reviewContent?.results.length - 1}
+                                />
                             </div>
                         </div>
                     )}

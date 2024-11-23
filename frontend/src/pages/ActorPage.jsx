@@ -5,10 +5,10 @@ import toast from "react-hot-toast";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import Navbar from "../components/Navbar";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Calendar, MapPin, User, Link as LinkIcon, Star, Film, Tv, Camera, ExternalLink } from "lucide-react";
 import { useContentStore } from "../store/content";
 
-const calculateAge = (birthday, deathday = null) => {
+const calculateAge = (birthday, deathday) => {
     const birthDate = new Date(birthday);
     const endDate = deathday ? new Date(deathday) : new Date();
     let age = endDate.getFullYear() - birthDate.getFullYear();
@@ -25,50 +25,79 @@ const calculateAge = (birthday, deathday = null) => {
 const Modal = ({ isOpen, onClose, title, content }) => {
     if (!isOpen) return null;
 
+    const modalContent = Array.isArray(content) ? content : [content];
+    const isSingleImage = modalContent.length === 1;
+    const isMovieModal = title.includes("Movies");
+    const isTVModal = title.includes("TV Shows");
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-gray-800 p-6 rounded-lg w-full max-w-4xl md:max-w-3xl sm:max-w-xl text-white relative">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold">{title}</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">
-                        <X size={24} />
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+            <div className={`
+                ${isSingleImage 
+                    ? 'w-full h-full max-w-full max-h-full p-4' 
+                    : 'bg-gray-800 p-6 rounded-lg w-full max-w-4xl md:max-w-3xl sm:max-w-xl'}
+                text-white relative flex flex-col
+            `}>
+                {!isSingleImage && (
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold">{title}</h2>
+                        <button 
+                            onClick={onClose} 
+                            className="text-white hover:text-gray-300"
+                        >
+                            <X size={24} />
+                        </button>
+                    </div>
+                )}
+
+                {isSingleImage && (
+                    <button 
+                        onClick={onClose} 
+                        className="absolute top-4 right-4 text-white hover:text-gray-300 z-50"
+                    >
+                        <X size={32} />
                     </button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto max-h-96">
-                    {content.map((item, idx) => (
-                        <div key={idx} className="flex flex-col items-center relative group">
-                            {/* Link around the image */}
-                            {item.id ? (
+                )}
+
+                <div className={`
+                    ${isSingleImage 
+                        ? 'w-full h-full flex items-center justify-center' 
+                        : 'grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto'}
+                    overflow-y-auto max-h-[100vh]
+                `}>
+                    {modalContent.map((item, idx) => (
+                        <div 
+                            key={idx} 
+                            className={`
+                                ${isSingleImage 
+                                    ? 'w-full h-full flex items-center justify-center' 
+                                    : 'flex flex-col items-center relative group transform transition-all duration-500 hover:scale-90'}
+                            `}
+                        >
+                            {(isMovieModal || isTVModal) ? (
                                 <Link
-                                    to={`/${title.includes("Movies") ? 'movie' : 'tv'}/moreinfo/${item.id}`}
-                                    onClick={() =>
-                                        useContentStore
-                                            .getState()
-                                            .setContentType(title.includes("Movies") ? 'movie' : 'tv')
+                                    to={`/${isMovieModal ? 'movie' : 'tv'}/moreinfo/${item.id}`}
+                                    onClick={() => 
+                                        useContentStore.getState().setContentType(isMovieModal ? 'movie' : 'tv')
                                     }
-                                    className="w-32 h-48 bg-gray-300 rounded-lg shadow-lg mb-2 group-hover:scale-110 transform transition-all duration-300 ease-in-out"
+                                    className="w-full h-full"
                                 >
                                     <img
                                         src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
                                         alt={item.title || item.name || `Image ${idx + 1}`}
-                                        className="w-full h-full object-cover rounded-lg"
+                                        className={'w-full h-full object-cover rounded-lg'}
                                     />
                                 </Link>
                             ) : (
-                                <div className="w-32 h-48 bg-gray-300 rounded-lg shadow-lg mb-2">
-                                    <img
-                                        src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                        alt={item.title || item.name || `Image ${idx + 1}`}
-                                        className="w-full h-full object-cover rounded-lg"
-                                    />
-                                </div>
-                            )}
-
-                            {/* Hover Popup Text */}
-                            {(item.title || item.name) && (
-                                <p className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-4 text-sm text-white bg-black bg-opacity-75 rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
-                                    {item.title || item.name}
-                                </p>
+                                <img
+                                    src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
+                                    alt={item.title || item.name || `Image ${idx + 1}`}
+                                    className={`
+                                        ${isSingleImage 
+                                            ? 'max-w-full max-h-full object-contain' 
+                                            : 'w-full h-full object-cover rounded-lg'}
+                                    `}
+                                />
                             )}
                         </div>
                     ))}
@@ -91,6 +120,28 @@ export const ActorPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState([]);
     const [modalTitle, setModalTitle] = useState("");
+
+    console.log("test: ", actorDetails);
+
+    const [scrollPositions, setScrollPositions] = useState({
+        movies: { isAtStart: true, isAtEnd: false },
+        tvShows: { isAtStart: true, isAtEnd: false },
+        gallery: { isAtStart: true, isAtEnd: false }
+    });
+
+    const checkScrollPosition = (element, section) => {
+        if (element) {
+            const isAtStart = element.scrollLeft === 0;
+            const isAtEnd = Math.abs(
+                element.scrollWidth - element.clientWidth - element.scrollLeft
+            ) < 1;
+
+            setScrollPositions(prev => ({
+                ...prev,
+                [section]: { isAtStart, isAtEnd }
+            }));
+        }
+    };
 
     const movieScrollRef = useRef();
     const tvScrollRef = useRef();
@@ -154,8 +205,55 @@ export const ActorPage = () => {
         setIsModalOpen(false);
     };
 
-    const scrollLeft = (ref) => ref.current.scrollBy({ left: -300, behavior: "smooth" });
-    const scrollRight = (ref) => ref.current.scrollBy({ left: 300, behavior: "smooth" });
+    const scrollLeft = (ref, section) => {
+        ref.current.scrollBy({ left: -300, behavior: "smooth" });
+        // Use setTimeout to allow the scroll animation to complete
+        setTimeout(() => checkScrollPosition(ref.current, section), 400);
+    };
+
+    const scrollRight = (ref, section) => {
+        ref.current.scrollBy({ left: 300, behavior: "smooth" });
+        // Use setTimeout to allow the scroll animation to complete
+        setTimeout(() => checkScrollPosition(ref.current, section), 400);
+    };
+
+    useEffect(() => {
+        const moviesList = movieScrollRef.current;
+        const tvList = tvScrollRef.current;
+        const imagesList = imageScrollRef.current;
+
+        const handleScroll = (element, section) => {
+            checkScrollPosition(element, section);
+        };
+
+        if (moviesList) {
+            moviesList.addEventListener('scroll', () => handleScroll(moviesList, 'movies'));
+            // Initial check
+            checkScrollPosition(moviesList, 'movies');
+        }
+
+        if (tvList) {
+            tvList.addEventListener('scroll', () => handleScroll(tvList, 'tvShows'));
+            checkScrollPosition(tvList, 'tvShows');
+        }
+
+        if (imagesList) {
+            imagesList.addEventListener('scroll', () => handleScroll(imagesList, 'gallery'));
+            checkScrollPosition(imagesList, 'gallery');
+        }
+
+        return () => {
+            if (moviesList) {
+                moviesList.removeEventListener('scroll', () => handleScroll(moviesList, 'movies'));
+            }
+            if (tvList) {
+                tvList.removeEventListener('scroll', () => handleScroll(tvList, 'tvShows'));
+            }
+            if (imagesList) {
+                imagesList.removeEventListener('scroll', () => handleScroll(imagesList, 'gallery'));
+            }
+        };
+    }, [actorMovies, actorTVs, actorImages]);
 
     if (loading) {
         return (
@@ -167,46 +265,52 @@ export const ActorPage = () => {
 
     if (!actorDetails) {
         return (
-            <div className="bg-black text-white h-screen flex items-center justify-center">
+            <div className="bg-slate-950 text-white h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-4xl sm:text-6xl font-extrabold text-balance">Content not found 😥</h2>
-                    <p className="mt-4 text-lg text-gray-400">It looks like we couldn't find this actor's details.</p>
+                    <h2 className="text-4xl sm:text-6xl font-extrabold text-balance bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                        Content not found 😥
+                    </h2>
+                    <p className="mt-4 text-lg text-slate-400">It looks like we couldn't find this actor's details.</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-black text-white">
+        <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 text-white min-h-screen">
             <Navbar />
-            <Modal
-                    isOpen={isModalOpen}
-                    onClose={closeModal}
-                    title={modalTitle}
-                    content={modalContent}
-            />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8">
+            <Modal isOpen={isModalOpen} onClose={closeModal} title={modalTitle} content={modalContent} />
+            
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-20 space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-12">
                     <div className="flex flex-col items-center md:items-start">
-                        <img src={`${ORIGINAL_IMG_BASE_URL}${actorDetails?.profile_path}`}
-                            alt={actorDetails?.name}
-                            className="w-64 h-96 rounded-lg shadow-2xl transform transition-all hover:scale-105 mb-4 mt-3 items-center"
-                        />
-                        <div className="text-center md:text-center ">
-                            <h1 className="text-4xl font-extrabold mb-2">{actorDetails?.name}</h1>
-                            <p className="italic text-rose-400 text-xl">{actorDetails?.known_for_department}</p>
+                        <div className="relative group">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
+                            <img 
+                                src={`${ORIGINAL_IMG_BASE_URL}${actorDetails?.profile_path}`}
+                                alt={actorDetails?.name}
+                                className="relative sm:w-auto sm:h-72 md:w-96 md:h-auto rounded-lg shadow-2xl object-cover transform transition-all duration-500 hover:scale-105"
+                            />
+                        </div>
+                        <div className="text-center md:ml-20 mt-6 space-y-2">
+                            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+                                {actorDetails?.name}
+                            </h1>
+                            <p className="text-blue-400 text-xl font-medium">
+                                {actorDetails?.known_for_department}
+                            </p>
                         </div>
                     </div>
 
-                    <div className="space-y-8">
-                        <div className="mb-4">
-                            <h2 className="text-3xl font-semibold mb-2">Biography</h2>
-                            <p className="text-gray-300">
+                    <div className="space-y-8 backdrop-blur-sm bg-slate-900/50 p-8 rounded-2xl shadow-xl">
+                        <div className="space-y-4">
+                            <h2 className="text-3xl font-semibold text-blue-400">Biography</h2>
+                            <p className="text-slate-300 leading-relaxed">
                                 {showBio ? actorDetails?.biography : `${actorDetails?.biography.slice(0, 400)}`}
                                 {actorDetails?.biography.length > 400 && (
                                     <button
                                         onClick={() => setShowBio(!showBio)}
-                                        className="text-blue-600 hover:underline ml-2"
+                                        className="ml-2 text-blue-400 hover:text-blue-300 transition-colors"
                                     >
                                         {showBio ? "See Less" : "See More"}
                                     </button>
@@ -214,128 +318,291 @@ export const ActorPage = () => {
                             </p>
                         </div>
 
-                        <div>
-                            <h2 className="text-3xl font-semibold mb-2">Details</h2>
-                            <ul className="list-disc ml-6 text-gray-300 space-y-2">
-                                <li>
-                                    <strong>Birthday: </strong> 
-                                    {actorDetails?.birthday ? (
+                        <div className="space-y-4">
+                            <h2 className="text-3xl font-semibold text-blue-400">Details</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex items-center space-x-3">
+                                    <Calendar className="text-blue-400" />
+                                    <div>
+                                    <p className="text-slate-400 text-sm">Birthday</p>
+                                    <p className="text-slate-200">
+                                        {actorDetails?.birthday ? (
                                         <>
-                                            {actorDetails?.birthday} (Age: {calculateAge(actorDetails?.birthday, actorDetails?.deathday)})
+                                            {actorDetails?.birthday} 
+                                            {actorDetails?.deathday 
+                                            ? ` - ${actorDetails?.deathday} (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})` 
+                                            : ` (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})`
+                                            }
                                         </>
-                                    ) : ("N/A")}
-                                </li>
-                                {actorDetails?.deathday && <li><strong>Death Date:</strong> {actorDetails?.deathday}</li>}
-                                <li><strong>Place of Birth:</strong> {actorDetails?.place_of_birth || "N/A"}</li>
-                                <li><strong>Gender:</strong> {actorDetails?.gender === 1 ? "Female" : "Male"}</li>
-                                <li>
-                                    <strong>Learn More:</strong>{" "}
-                                    <a href={`https://www.imdb.com/name/${actorDetails?.imdb_id}`}
-                                        target="_blank" rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-400 underline">
-                                        Click Here
-                                    </a>
-                                </li>
-                                <li><strong>Also Known As:</strong> {actorDetails?.also_known_as?.join(", ") || "N/A"}</li>
-                                <li><strong>Popularity:</strong> {actorDetails?.popularity}</li>
-                            </ul>
-                        </div>
+                                        ) : "N/A"}
+                                    </p>
+                                    </div>
+                                </div>
 
-                        {actorDetails?.homepage && (
-                            <div className="mt-4">
-                                <h2 className="text-3xl font-semibold mb-2">Official Website</h2>
-                                <a
-                                    href={actorDetails?.homepage}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-400 underline"
-                                >
-                                    Visit Website
-                                </a>
-                            </div>
-                        )}
-                    </div>
+                                <div className="flex items-center space-x-3">
+                                    <MapPin className="text-blue-400" />
+                                    <div>
+                                        <p className="text-slate-400 text-sm">Place of Birth</p>
+                                        <p className="text-slate-200">{actorDetails?.place_of_birth || "N/A"}</p>
+                                    </div>
+                                </div>
 
-                </div>
+                                <div className="flex items-center space-x-3">
+                                    <User className="text-blue-400" />
+                                    <div>
+                                        <p className="text-slate-400 text-sm">Gender</p>
+                                        <p className="text-slate-200">{actorDetails?.gender === 1 ? "Female" : "Male"}</p>
+                                    </div>
+                                </div>
 
-                {/* Scrollable Movie/TV Show/Images Sections */}
-                {[
-                    { label: 'Movies', items: [...new Map(actorMovies .filter(movie => movie.poster_path) .map(movie => [movie.id, movie])) .values()],  ref: movieScrollRef },
-                    { label: 'TV Shows', items: [...new Map(actorTVs .filter(tv => tv.poster_path) .map(tv => [tv.id, tv])) .values()],  ref: tvScrollRef },
-                    { label: 'Photo Gallery', items: [...new Map(actorImages .filter(img => img.file_path) .map(img => [img.file_path, img])) .values()], ref: imageScrollRef }
-                ].map(({ label, items, ref }, index) => {
-                    // Filter items to include only those with a valid poster or file path
-                    const filteredItems = items.filter(item => item.poster_path || item.file_path);
+                                <div className="flex items-center space-x-3">
+                                    <Star className="text-blue-400" />
+                                    <div>
+                                        <p className="text-slate-400 text-sm">Popularity</p>
+                                        <p className="text-slate-200">{actorDetails?.popularity}</p>
+                                    </div>
+                                </div>
 
-                    // If no valid items, skip rendering this section
-                    if (filteredItems.length === 0) return null;
-
-                    return (
-                        <div key={index} className="relative mt-8">
-                            <h2 className="text-3xl font-semibold mb-4 text-center">{`${actorDetails?.name.split(" ")[0]}'s ${label}`}</h2>
-
-                            {/* Add "Display All" buttons */}
-                            <div className="flex justify-center gap-4 mb-4">
-                                {label === 'Movies' && (
-                                    <button onClick={() => openModal("All Movies", [...new Map(actorMovies .filter(movie => movie.poster_path) .map(movie => [movie.id, movie])) .values()])} className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-2 rounded-full shadow-md transition-transform transform hover:scale-105">
-                                        Display All Movies
-                                    </button>
-                                )}
-                                {label === 'TV Shows' && (
-                                    <button onClick={() => openModal("All TV Shows", [...new Map(actorTVs .filter(tv => tv.poster_path) .map(tv => [tv.id, tv])) .values()])} className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-2 rounded-full shadow-md transition-transform transform hover:scale-105">
-                                        Display All TV Shows
-                                    </button>
-                                )}
-                                {label === 'Photo Gallery' && (
-                                    <button onClick={() => openModal("Photo Gallery", [...new Map(actorImages .filter(img => img.file_path) .map(img => [img.file_path, img])) .values()])} className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-2 rounded-full shadow-md transition-transform transform hover:scale-105">
-                                        Display All Images
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Horizontal scroll section */}
-                            <button  onClick={() => scrollLeft(ref)} className="absolute left-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600" >
-                                <ChevronLeft size={24} />
-                            </button>
-                            
-                            <div ref={ref} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
-                            {filteredItems.map((item, idx) => (
-                                <div key={idx} className="flex-shrink-0 w-64 h-96 group relative">
-                                    {label === 'Photo Gallery' ? (
-                                        <div className="w-full h-full object-cover rounded-lg shadow-lg bg-gray-300">
-                                            {/* Placeholder for the image, can add a disabled message or style */}
-                                            <img
-                                                src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                                alt={item.title || item.name || `Image ${idx + 1}`}
-                                                className="w-full h-full object-cover rounded-lg shadow-lg transform transition-transform hover:scale-105"
-                                                onLoad={() => setLoading(false)}
-                                            />
+                                {actorDetails?.also_known_as && actorDetails.also_known_as.length > 0 && (
+                                    <div className="mt-4">
+                                        <h3 className="text-xl font-semibold text-blue-400 mb-2">Also Known As</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                        {actorDetails.also_known_as.map((name, index) => (
+                                            <span 
+                                            key={index} 
+                                            className="bg-slate-700 text-slate-200 px-2 py-1 rounded text-sm"
+                                            >
+                                            {name}
+                                            </span>
+                                        ))}
                                         </div>
-                                    ) : (
-                                        <Link to={`/${label === 'Movies' ? 'movie' : 'tv'}/moreinfo/${item.id}`}
-                                            onClick={() => useContentStore .getState() .setContentType(label === 'Movies' ? 'movie' : 'tv') } >
-                                            <img
-                                                src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                                alt={item.title || item.name || `Image ${idx + 1}`}
-                                                className="w-full h-full object-cover rounded-lg shadow-lg transform transition-all hover:scale-105"
-                                            />
-                                        </Link>
+                                    </div>
+                                    )}
+                                
+                                <div className="flex space-x-4 mt-4">
+                                    {/* Homepage Link */}
+                                    {actorDetails?.homepage && (
+                                        <a
+                                        href={actorDetails?.homepage}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
+                                        >
+                                        <LinkIcon size={16} />
+                                        <span>Website</span>
+                                        </a>
+                                    )}
+
+                                    {/* IMDB Link */}
+                                    {actorDetails?.imdb_id && (
+                                        <a
+                                        href={`https://www.imdb.com/name/${actorDetails.imdb_id}/`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
+                                        >
+                                        <ExternalLink size={16} />
+                                        <span>Learn More</span>
+                                        </a>
                                     )}
                                 </div>
-                            ))}
 
                             </div>
-                            <button
-                                onClick={() => scrollRight(ref)}
-                                className="absolute right-0 z-10 p-2 bg-gray-700 rounded-full top-1/2 transform -translate-y-1/2 shadow-md hover:bg-gray-600"
+                        </div>
+                    </div>
+                </div>
+
+                {/* Movies Section */}
+                {actorMovies.length > 0 && (
+                    <div className="relative space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-3xl font-semibold text-blue-400 flex items-center gap-2">
+                                <Film />
+                                <span>Movies</span>
+                            </h2>
+                            <button 
+                                onClick={() => openModal("All Movies", [...new Map(actorMovies.filter(movie => movie.poster_path).map(movie => [movie.id, movie])).values()])}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-full text-white transition-colors"
                             >
-                                <ChevronRight size={24} />
+                                View All
                             </button>
                         </div>
-                    );
-                })}
 
+                        <div className="relative group">
+                            {!scrollPositions.movies.isAtStart && (
+                                <button
+                                    onClick={() => scrollLeft(movieScrollRef, 'movies')}
+                                    className="absolute left-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                            )}
+                            
+                            <div ref={movieScrollRef} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
+                                {actorMovies.filter(movie => movie.poster_path).map((movie, idx) => (
+                                    <Link 
+                                        key={idx}
+                                        to={`/movie/moreinfo/${movie.id}`}
+                                        onClick={() => useContentStore.getState().setContentType('movie')}
+                                        className="relative flex-shrink-0"
+                                    >
+                                        <div className="w-64 h-96 overflow-hidden rounded-lg relative">
+                                            <img
+                                                src={`${ORIGINAL_IMG_BASE_URL}${movie.poster_path}`}
+                                                alt={movie.title}
+                                                className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-110"
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                            <div className="space-y-1">
+                                                <p className="text-white font-medium">{movie.title}</p>
+                                                {movie.character && (
+                                                    <p className="text-blue-300 text-sm">as {movie.character}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
 
+                            {!scrollPositions.movies.isAtEnd && (
+                                <button
+                                    onClick={() => scrollRight(movieScrollRef, 'movies')}
+                                    className="absolute right-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* TV Shows Section - Similar structure to Movies section */}
+                {actorTVs.length > 0 && (
+                    <div className="relative space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-3xl font-semibold text-blue-400 flex items-center gap-2">
+                                <Tv />
+                                <span>TV Shows</span>
+                            </h2>
+                            <button 
+                                onClick={() => openModal("All TV Shows", [...new Map(actorTVs.filter(tv => tv.poster_path).map(tv => [tv.id, tv])).values()])}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-full text-white transition-colors"
+                            >
+                                View All
+                            </button>
+                        </div>
+
+                        <div className="relative group">
+                            {!scrollPositions.tvShows.isAtStart && (
+                                <button
+                                    onClick={() => scrollLeft(tvScrollRef, 'tvShows')}
+                                    className="absolute left-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                            )}
+                            
+                            <div ref={tvScrollRef} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
+                                {actorTVs.filter(tv => tv.poster_path).map((show, idx) => (
+                                    <Link 
+                                        key={idx}
+                                        to={`/tv/moreinfo/${show.id}`}
+                                        className="relative flex-shrink-0"
+                                        onClick={() => useContentStore.getState().setContentType('tv')}
+                                    >
+                                        <div className="w-64 h-96 overflow-hidden rounded-lg shadow-lg">
+                                            <img
+                                                src={`${ORIGINAL_IMG_BASE_URL}${show.poster_path}`}
+                                                alt={show.name}
+                                                className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-110"
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                            <div className="space-y-1">
+                                                <p className="text-white font-medium">{show.name}</p>
+                                                {show.character && (
+                                                    <p className="text-blue-300 text-sm">as {show.character}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {!scrollPositions.tvShows.isAtEnd && (
+                                <button
+                                    onClick={() => scrollRight(tvScrollRef, 'tvShows')}
+                                    className="absolute right-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Photo Gallery Section - Similar structure to above sections */}
+                {actorImages.length > 0 && (
+                    <div className="relative space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-3xl font-semibold text-blue-400 flex items-center gap-2">
+                                <Camera />
+                                <span>Photo Gallery</span>
+                            </h2>
+                            <button 
+                                onClick={() => openModal("Photo Gallery", [...new Map(actorImages.filter(img => img.file_path).map(img => [img.file_path, img])).values()])}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-full text-white transition-colors"
+                            >
+                                View All
+                            </button>
+                        </div>
+
+                        <div className="relative group">
+                            {!scrollPositions.gallery.isAtStart && (
+                                <button
+                                    onClick={() => scrollLeft(imageScrollRef, 'gallery')}
+                                    className="absolute left-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                            )}
+                            
+                            <div ref={imageScrollRef} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
+                                {actorImages.filter(img => img.file_path).map((image, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className="relative flex-shrink-0 cursor-pointer"
+                                        onClick={() => openModal("Photo Gallery", [image])}
+                                    >
+                                        <div className="w-64 h-96 overflow-hidden rounded-lg shadow-lg bg-slate-800">
+                                            <img
+                                                src={`${ORIGINAL_IMG_BASE_URL}${image.file_path}`}
+                                                alt={`${actorDetails.name} - Photo ${idx + 1}`}
+                                                className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-110"
+                                                loading="lazy"
+                                            />
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+                                            <div className="px-4 py-2 bg-blue-600/80 rounded-full backdrop-blur-sm">
+                                                <p className="text-white text-sm">Click to View</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {!scrollPositions.gallery.isAtEnd && (
+                                <button
+                                    onClick={() => scrollRight(imageScrollRef, 'gallery')}
+                                    className="absolute right-0 z-10 p-3 bg-slate-800/90 rounded-full top-1/2 transform -translate-y-1/2 shadow-xl hover:bg-slate-700/90 transition-colors"
+                                >
+                                    <ChevronRight size={24} />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

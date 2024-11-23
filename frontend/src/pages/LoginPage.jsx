@@ -1,90 +1,112 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authUser.js";
+import { ChevronRight, Lock, Mail } from "lucide-react";
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const {login, isLoggingIn} = useAuthStore();
+function LoginPage() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [imgLoading, setImgLoading] = useState(true);
+    
+    const { login, isLoggingIn } = useAuthStore();
 
-  const [backgroundClass, setBackgroundClass] = useState("hero-bg");
-  const [fadeClass, setFadeClass] = useState("fade-in");
+    const handleLogin = (e) => {
+        e.preventDefault();
+        login({ email, password });
+    };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // console.log(email, password);
-    login({email, password});
-  };
+    return (
+        <div className="min-h-screen bg-slate-950">
+            {/* Hero Section with Background Image */}
+            <div className="relative min-h-screen">
+                {/* Background Image */}
+                <div className="absolute inset-0 w-full h-full">
+                    {imgLoading && (
+                        <div className="absolute inset-0 bg-blue-900/30 animate-pulse" />
+                    )}
+                    <img
+                        src="background3.jpg"
+                        alt="Background"
+                        className="w-full h-full object-cover"
+                        onLoad={() => setImgLoading(false)}
+                    />
+                    {/* Gradient Overlays */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/40 to-transparent" />
+                </div>
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-        setFadeClass("fade-out");
+                {/* Login Form Section */}
+                <div className="relative z-10 container mx-auto px-4 lg:px-8 py-12 flex flex-col items-center justify-center min-h-screen">
+                    <div className="w-full max-w-xl bg-slate-900/80 backdrop-blur-sm rounded-xl p-8 border border-slate-800">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text mb-6 text-center">
+                            Welcome Back
+                        </h1>
 
-        setTimeout(() => {
-            setBackgroundClass((prevClass) =>
-                prevClass === "hero-bg" ? "hero2-bg" : "hero-bg"
-            );
-            setFadeClass("fade-in");
-        }, 50);
-        }, 5000);
-    return () => clearInterval(interval);
-  });
+                        {/* Login Guidelines */}
+                        <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                            <h2 className="text-blue-200 font-semibold mb-2">Login Information:</h2>
+                            <p className="text-slate-300 text-sm">
+                                Enter your email and password to access your account. If you've forgotten your password, please contact support.
+                            </p>
+                        </div>
 
-  return (
-    <div className={`${backgroundClass} ${fadeClass} relative transition-opacity duration-500 min-h-screen w-full`}>
-        <header className="max-w-8xl mx-auto flex items-center justify-between p-4">
-            <Link to={"/"}>
-                <img src="/netflix-logo.png" alt="logo" className="w-52"/>
-            </Link>
-        </header>
+                        <form className="space-y-6" onSubmit={handleLogin}>
+                            <div>
+                                <label htmlFor="email" className="text-sm font-medium text-blue-200 block mb-2">
+                                    Email
+                                </label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 size-5" />
+                                    <input
+                                        type="email"
+                                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="john.doe@gmail.com"
+                                        id="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-        <div className="flex justify-center items-center mt-20 mx-3">
-            <div className="w-full max-w-md p-8 space-y-6 bg-black/65 rounded-lg shadow-md">
-                <h1 className="text-center text-white text-2x1 font-bold mb-4">
-                    Login
-                </h1>
+                            <div>
+                                <label htmlFor="password" className="text-sm font-medium text-blue-200 block mb-2">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 size-5" />
+                                    <input
+                                        type="password"
+                                        className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="******"
+                                        id="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-                <form className="space-y-4" onSubmit={handleLogin}>
-                    <div>
-                        <label htmlFor="email" className="text-sm font-medium text-gray-300 block">
-                            Email
-                        </label>
-                        <input type="email"
-                        className="w-full px-3 py-2 mt-1 border border-gray-700 rounded-md bg-transparent text-white
-                        focus:outline-none focus:ring" placeholder="john.doe@gmail.com" id="email"
-                        value={email} onChange={(e) => setEmail(e.target.value)}/>
+                            <button
+                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isLoggingIn}
+                            >
+                                {isLoggingIn ? "Logging in..." : "Login"}
+                                <ChevronRight className="size-5" />
+                            </button>
 
+                            <div className="text-center text-slate-300">
+                                Don't have an account?{" "}
+                                <Link to="/signup" className="text-blue-400 hover:text-blue-300 hover:underline">
+                                    Sign up
+                                </Link>
+                            </div>
+                        </form>
                     </div>
-
-                    <div>
-                        <label htmlFor="password" className="text-sm font-medium text-gray-300 block">
-                            Password
-                        </label>
-                        <input type="password"
-                        className="w-full px-3 py-2 mt-1 border border-gray-700 rounded-md bg-transparent text-white
-                        focus:outline-none focus:ring" placeholder="******" id="password"
-                        value={password} onChange={(e) => setPassword(e.target.value)}/>
-                    </div>
-
-                    <button className="w-full py-2 bg-red-600 text-white font-semibold rounded-md
-                        hover:bg-red-800"
-                        disabled={isLoggingIn}>
-                        {isLoggingIn ? "Loading..." : "Login"}
-                    </button>
-
-                    <div className="text-center text-gray-400">
-                        Don't have an account?{" "}
-                        <Link to={"/signup"} className="text-red-600 hover:underline">Sign Up
-                        </Link>
-                    </div>
-
-                </form>
-
+                </div>
             </div>
         </div>
-
-    </div>
-  )
+    );
 }
 
-export default LoginPage
+export default LoginPage;
