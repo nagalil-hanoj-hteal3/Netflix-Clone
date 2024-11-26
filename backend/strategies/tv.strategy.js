@@ -30,8 +30,12 @@ const TVStrategy = {
         return data;
     },
     async getRecommendations(id) {
-        const data = await fetchFromTMDB(`https://api.themoviedb.org/3/tv/${id}/recommendations?language=en-US&page=1`)
+        const data = await fetchFromTMDB(`https://api.themoviedb.org/3/tv/${id}/recommendations?language=en-US&page=1`);
         return data.results;
+    },
+    async getImages(id) {
+        const data = await fetchFromTMDB(`https://api.themoviedb.org/3/tv/${id}/images`);
+        return data;
     }
 }
 

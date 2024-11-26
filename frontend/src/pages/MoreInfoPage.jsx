@@ -1,26 +1,24 @@
-/* eslint-disable no-unsafe-optional-chaining */
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useContentStore } from "../store/content";
 import axios from "axios";
 import Navbar from "../components/Navbar";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Clock, Calendar, Star, Eye, EyeOff, Award } from "lucide-react";
 import { ORIGINAL_IMG_BASE_URL, SMALL_IMG_BASE_URL } from "../utils/constants";
 import { formatReleaseDate } from "../utils/dateFunction";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import StarRating from "../components/StarRating";
 import InfoIconWithTooltip from "../components/InfoIconWithTooltip";
 import TV_Modal from "../components/TV_Modal";
+import Gallery from "../components/moreinfo/Gallery";
 
-export const MoreInfoPage = () => {
+function MoreInfoPage() {
 
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
     const [content, setContent] = useState(null);
     const [similarContent, setSimilarContent] = useState([]);
-    const {contentType} = useContentStore();
-    // console.log("test: ", contentType);
-    // console.log('Route params:', { type, id });
+    const {contentType, setContentTypeFromPath} = useContentStore();
 
     // added
     const [reviewContent, setReviewContent] = useState({ results: []});
@@ -29,13 +27,13 @@ export const MoreInfoPage = () => {
     const [castMember, setCastMember] = useState({ cast: []});
     const [filterRole, setFilterRole] = useState("Cast & Crew");
     const [recommendations, setRecommendations] = useState([]);
+    const [contentImages, setContentImages] = useState({ backdrops: []});
 
-    const [isAtStart, setIsAtStart] = useState(true);
-    const [isAtEnd, setIsAtEnd] = useState(false);
-    const [isAtStartSimilar, setIsAtStartSimilar] = useState(true);
-    const [isAtEndSimilar, setIsAtEndSimilar] = useState(false);
-    const [isAtStartRecommend, setIsAtStartRecommend] = useState(false);
-    const [isAtEndRecommend, setIsAtEndRecommend] = useState(false);
+    const [canScrollStates, setCanScrollStates] = useState({
+        cast: { left: false, right: false },
+        similar: { left: false, right: false },
+        recommendations: { left: false, right: false }
+    });
 
     const castSliderRef = useRef(null);
     const similarSliderRef = useRef(null);
@@ -43,12 +41,42 @@ export const MoreInfoPage = () => {
     const reviewersSliderRef = useRef(null);
 
     const score = content?.vote_average || 0;
+    const location = window.location.pathname;
 
-    console.log("content: ", content);
-    console.log("similar : ", similarContent);
-    console.log("review: ", reviewContent);
-    console.log("cast member: ", castMember);
-    console.log("recommendations: ", recommendations);
+    const combinedMembers = [
+        ...(castMember?.cast?.map(member => ({ ...member, role: 'Cast' })) || []),
+        ...(castMember?.crew?.map(member => ({ ...member, role: 'Crew' })) || [])
+    ];
+
+    const hasCastMembers = combinedMembers?.some(member => member.role === "Cast" && member.profile_path);
+    const hasCrewMembers = combinedMembers?.some(member => member.role === "Crew" && member.profile_path);
+
+    // console.log("content: ", content);
+    // console.log("similar : ", similarContent);
+    // console.log("review: ", reviewContent);
+    // console.log("cast member: ", castMember);
+    // console.log("recommendations: ", recommendations);
+    // console.log("test: ", contentImages);
+
+    useEffect(() => {
+        setContentTypeFromPath(location);
+    }, [location, setContentTypeFromPath]);
+    
+    // Add this useEffect for scroll restoration
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [id]);
+
+    useEffect(() => {
+        if (hasCastMembers && !hasCrewMembers) {
+            setFilterRole("Cast");
+        } else if (!hasCastMembers && hasCrewMembers) {
+            setFilterRole("Crew");
+        } else if (hasCastMembers && hasCrewMembers) {
+            setFilterRole("Cast & Crew");
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [castMember]);
 
     // combined all the following into this use effect rather than creating multiple use effects
     useEffect(() => {
@@ -60,6 +88,7 @@ export const MoreInfoPage = () => {
             `/api/v1/content/${contentType}/${id}/reviews`,
             `/api/v1/content/${contentType}/${id}/credits`,
             `/api/v1/content/${contentType}/${id}/recommendations`,
+            `/api/v1/content/${contentType}/${id}/images`
             ];
         
             try {
@@ -72,6 +101,7 @@ export const MoreInfoPage = () => {
                     case 2: setReviewContent(res.value.data.review); break;
                     case 3: setCastMember(res.value.data.content); break;
                     case 4: setRecommendations(res.value.data.content); break;
+                    case 5: setContentImages(res.value.data.content); break;
                 }
                 }
             });
@@ -86,93 +116,117 @@ export const MoreInfoPage = () => {
         fetchData();
     }, [contentType, id]);
 
-    const checkScrollPosition = () => {
-        const slider = castSliderRef.current;
+    const checkScroll = (slider, section) => {
         if (slider) {
-            // Check if at start
-            setIsAtStart(slider.scrollLeft === 0);
-            // Check if at end (accounting for rounding errors)
-            setIsAtEnd(Math.ceil(slider.scrollLeft + slider.clientWidth) >= slider.scrollWidth);
-        }
-    };
-
-    const checkSimilarScrollPosition = () => {
-        const slider = similarSliderRef.current;
-        if (slider) {
-            setIsAtStartSimilar(slider.scrollLeft === 0);
-            setIsAtEndSimilar(Math.ceil(slider.scrollLeft + slider.clientWidth) >= slider.scrollWidth);
-        }
-    };
-
-    const checkRecommendationScrollPosition = () => {
-        const slider = recommendationsSliderRef.current;
-        if (slider) {
-            setIsAtStartRecommend(slider.scrollLeft === 0);
-            setIsAtEndRecommend(Math.ceil(slider.scrollLeft + slider.clientWidth) >= slider.scrollWidth);
-        }
-    }
-
-    const scrollRight = (ref) => {
-        if (ref.current && !isAtEnd && !isAtEndSimilar && !isAtEndRecommend) {
-            ref.current.scrollBy({ left: ref.current.offsetWidth, behavior: "smooth" });
-        }
-    };
-    
-    const scrollLeft = (ref) => {
-        if (ref.current && !isAtStart && !isAtStartSimilar &&!isAtStartRecommend) {
-            ref.current.scrollBy({ left: -ref.current.offsetWidth, behavior: "smooth" });
-        }
-    };
-
-    useEffect(() => {
-        const slider = castSliderRef.current;
-        if (slider) {
-            checkScrollPosition();
-            slider.addEventListener('scroll', checkScrollPosition);
-            window.addEventListener('resize', checkScrollPosition);
-            return () => {
-                slider.removeEventListener('scroll', checkScrollPosition);
-                window.removeEventListener('resize', checkScrollPosition);
-            };
-        }
-    }, []); 
-    
-    useEffect(() => {
-        const slider = similarSliderRef.current;
-        if (slider) {
-            checkSimilarScrollPosition(); // Check initial position
-            slider.addEventListener('scroll', checkSimilarScrollPosition);
-            window.addEventListener('resize', checkSimilarScrollPosition);
+            const { scrollLeft, scrollWidth, clientWidth } = slider;
+            const hasOverflow = scrollWidth > clientWidth + 1;
             
+            setCanScrollStates(prev => ({
+                ...prev,
+                [section]: {
+                    left: hasOverflow && scrollLeft > 0,
+                    right: hasOverflow && scrollLeft + clientWidth < scrollWidth - 1
+                }
+            }));
+        }
+    };
+
+    const scroll = (direction, sliderRef, section) => {
+        if (sliderRef.current) {
+            const scrollAmount = direction === 'left' ? -sliderRef.current.offsetWidth : sliderRef.current.offsetWidth;
+            sliderRef.current.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+            
+            // Check scroll possibility after animation
+            setTimeout(() => checkScroll(sliderRef.current, section), 400);
+        }
+    };
+
+    useEffect(() => {
+        const sliders = {
+            cast: castSliderRef?.current,
+            similar: similarSliderRef?.current,
+            recommendations: recommendationsSliderRef?.current
+        };
+
+        Object.entries(sliders).forEach(([section, slider]) => {
+            if (slider) {
+                // Initial check
+                checkScroll(slider, section);
+
+                // Add event listeners
+                const handleScroll = () => checkScroll(slider, section);
+                slider.addEventListener('scroll', handleScroll);
+                window.addEventListener('resize', handleScroll);
+
+                // Cleanup
+                return () => {
+                    slider.removeEventListener('scroll', handleScroll);
+                    window.removeEventListener('resize', handleScroll);
+                };
+            }
+        });
+    }, [content, similarContent, recommendations]);
+
+    useEffect(() => {
+        // Reset scroll position when filter changes
+        if (castSliderRef.current) {
+            castSliderRef.current.scrollLeft = 0;
+        }
+        
+        // Add small delay to allow DOM to update
+        setTimeout(() => {
+            checkScroll(castSliderRef.current, 'cast');
+        }, 100);
+    }, [filterRole]);
+
+    useEffect(() => {
+        const currentSlider = castSliderRef.current;
+        
+        if (currentSlider) {
+            const resizeObserver = new ResizeObserver(() => {
+                checkScroll(currentSlider, 'cast');
+            });
+            
+            resizeObserver.observe(currentSlider);
+            
+            // Initial check
+            checkScroll(currentSlider, 'cast');
+
             return () => {
-                slider.removeEventListener('scroll', checkSimilarScrollPosition);
-                window.removeEventListener('resize', checkSimilarScrollPosition);
+                resizeObserver.disconnect();
             };
         }
-    }, []);
+    }, [castMember, filterRole]);
 
-    useEffect(() => {
-        const slider = recommendationsSliderRef.current;
-        if (slider) {
-            checkRecommendationScrollPosition();
-            slider.addEventListener('scroll', checkRecommendationScrollPosition);
-            window.addEventListener('resize', checkRecommendationScrollPosition);
-
-            return () => {
-                slider.removeEventListener('scroll', checkRecommendationScrollPosition);
-                window.removeEventListener('resize', checkRecommendationScrollPosition);
-            }
-        }
-    }, []);
-    
-    useEffect(() => {
-        const slider = castSliderRef.current;
-        if (slider) {
-            checkScrollPosition(); // Check initial position
-            slider.addEventListener('scroll', checkScrollPosition);
-            return () => slider.removeEventListener('scroll', checkScrollPosition);
-        }
-    }, []);
+    const renderScrollButtons = (section, sliderRef) => (
+        <>
+            {canScrollStates[section]?.left && (
+                <button
+                    onClick={() => scroll('left', sliderRef, section)}
+                    className="absolute left-0 top-1/3 -translate-y-1/2 p-3 
+                            bg-blue-600/90 hover:bg-blue-500 backdrop-blur rounded-full 
+                            transition-all duration-300 opacity-0 group-hover:opacity-100
+                            shadow-lg hover:shadow-blue-500/50 transform hover:-translate-x-1"
+                >
+                    <ChevronLeft className="w-6 h-6 text-white" />
+                </button>
+            )}
+            {canScrollStates[section]?.right && (
+                <button
+                    onClick={() => scroll('right', sliderRef, section)}
+                    className="absolute right-0 top-1/3 -translate-y-1/2 p-3 
+                            bg-blue-600/90 hover:bg-blue-500 backdrop-blur rounded-full 
+                            transition-all duration-300 opacity-0 group-hover:opacity-100
+                            shadow-lg hover:shadow-blue-500/50 transform hover:translate-x-1"
+                >
+                    <ChevronRight className="w-6 h-6 text-white" />
+                </button>
+            )}
+        </>
+    );
 
     if(loading) return (
         <div className="min-h-screen bg-black p-10">
@@ -199,11 +253,6 @@ export const MoreInfoPage = () => {
         setExpandedIndex(prevIndex => prevIndex === index ? null : index);
     };
 
-    const combinedMembers = [
-        ...(castMember?.cast?.map(member => ({ ...member, role: 'Cast' })) || []),
-        ...(castMember?.crew?.map(member => ({ ...member, role: 'Crew' })) || [])
-    ];
-    
     const uniqueMembersMap = new Map();
     combinedMembers.forEach(member => {
         if (!uniqueMembersMap.has(member.id)) {
@@ -225,317 +274,338 @@ export const MoreInfoPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
-            <div className="min-[0px]:px-4 sm:px-0 mx-auto container h-full">
-                <Navbar/>
+            <Navbar/>
+            <div className="relative min-h-screen">
                 {/* movie details */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 max-w-6xl mx-auto">
-                    
-                    {/* Left Section: Content Details */}
-                    <div className="mb-4 md:mb-0 w-full md:w-1/2 ">
-                        <h2 className="text-5xl font-bold text-balance mt-16 flex items-center">{content?.title || content?.name}
-                        <InfoIconWithTooltip content={content}/>
-                        </h2>
-                        <p className="mt-4 flex flex-wrap gap-2">
-                            {content?.genres?.map((genre, index) => (
-                                <span key={index}
-                                    className="bg-gray-800 text-white px-3 py-1 rounded-full text-sm mb-3">
-                                    {genre?.name}
-                                </span>
-                            ))}
-                        </p>
-                        <p className="mt-2 text-lg">
-                            Released:{" "}
-                            {formatReleaseDate(content?.release_date || content?.first_air_date)} |{" "}
-                            {/* Check if runtime is available and format it */}
-                            {content?.runtime ? (
-                                <>
-                                    {Math.floor(content.runtime / 60) > 0 && (
-                                        <>
-                                            {Math.floor(content.runtime / 60)}{" "}
-                                            {Math.floor(content.runtime / 60) === 1 ? "hr" : "hrs"}
-                                        </>
-                                    )}
-                                    {content.runtime % 60 > 0 && (
-                                        <>
-                                            {Math.floor(content.runtime / 60) > 0 && ", "}
-                                            {content.runtime % 60}{" "}
-                                            {content.runtime % 60 === 1 ? "min" : "mins"}{" |"}
-                                        </>
-                                    )}
-                                </>
-                            ) : null}
-                            {/* Adult rating */}
-                            {content?.adult ? (
-                                <span className="text-red-600">{" "}18+</span>
-                            ) : (
-                                <span className="text-green-600">{" "}PG-13</span>
-                            )}
-                        </p>
-                        <p className="mt-4 text-lg">{content?.overview}</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-                            {/* Overall Score and Star Rating */}
-                            <div className="flex flex-col space-y-2">
-                                <p className="text-lg">
-                                    Overall Score: {score !== undefined && score !== null ? `${score.toFixed(1)} / 10` : "N/A"}
-                                </p>
-
-                                {/* Render stars only if score is available */}
-                                {score !== undefined && score !== null && (
-                                   <StarRating rating={score/2} maxStars={5} size="w-6 h-6"/>
-                                )}
-                            </div>
-
-
-                            {/* Watch Trailer Button */}
-                            <div className="flex flex-col justify-center items-center md:items-start">
-                                <Link to={`/watch/${id}`} className="bg-gray-700 text-white rounded py-2 px-2 hover:bg-gray-600 ml-auto">
-                                    Watch Trailer HERE!
-                                </Link>
+                {/* Backdrop Image */}
+                <div className="absolute inset-0 h-[90vh]">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"/>
+                    {content?.backdrop_path && (
+                        <img
+                            src={`${ORIGINAL_IMG_BASE_URL}${content.backdrop_path}`}
+                            alt="backdrop image"
+                            className="w-full h-full object-cover opacity-30"
+                        />
+                    )}
+                </div>
+                {/* Content Container */}
+                <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-12">
+                    <div className="flex flex-col lg:flex-row gap-8 lg:mb-28 mb-10">
+                        {/* Poster */}
+                        <div className="lg:w-1/4 flex-shrink-0">
+                            <div className="rounded-xl overflow-hidden shadow-2xl transform hover:scale-105 transition duration-300">
+                                <img
+                                    loading="lazy"
+                                    src={content?.poster_path ? `${ORIGINAL_IMG_BASE_URL}${content?.poster_path}` : '/unavailable.jpg'}
+                                    alt={content?.title || content?.name}
+                                    className="w-full h-auto object-cover"
+                                />
                             </div>
                         </div>
 
-
-                        {/* Cast and Crew */}
-                        {combinedMembers?.length > 0 && (
-                            <div className="mt-12 max-w-full mx-auto relative group">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-4xl font-bold">{filterRole}</h3>
-                                    <select value={filterRole} onChange={handleRoleChange} className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600">
-                                        {/* Only show Cast & Crew if both exist */}
-                                            {combinedMembers.some(member => member.character) && 
-                                            combinedMembers.some(member => member.job) && (
-                                                <option value="Cast & Crew">Cast & Crew</option>
-                                            )}
-                                            
-                                            {/* Only show Cast if there are cast members */}
-                                            {combinedMembers.some(member => member.character) && (
-                                                <option value="Cast">Cast</option>
-                                            )}
-                                            
-                                            {/* Only show Crew if there are crew members */}
-                                            {combinedMembers.some(member => member.job) && (
-                                                <option value="Crew">Crew</option>
-                                            )}
-                                    </select>
+                        {/* Movie Info */}
+                        <div className="lg:w-3/4 space-y-6 flex-grow min-w-0">
+                            {/* Title and Trailer Button */}
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                                <div className="min-w-0 flex-grow">
+                                    <h1 className="text-3xl lg:text-4xl font-bold text-white mb-2 break-words pr-4 flex items-start gap-2">
+                                        <span>{content?.title || content?.name}</span>
+                                        <InfoIconWithTooltip content={content} />
+                                    </h1>
+                                    {content?.tagline && (
+                                        <p className="text-base lg:text-lg text-gray-300 italic line-clamp-2">"{content.tagline}"</p>
+                                    )}
                                 </div>
-                                <div className="flex overflow-x-scroll gap-4 pb-4 scrollbar-hide" ref={castSliderRef}>
-                                    {filteredMembers?.map((member) =>
-                                        member.profile_path ? (
-                                            <Link
-                                                to={`/actor/${member.id}`}
-                                                key={`${member.id}-${member.role}`}
-                                                className="w-32 flex-none hover:text-rose-300"
-                                            >
-                                                <img 
+                                <Link 
+                                    to={`/watch/${id}`}
+                                    className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white 
+                                            rounded-full font-medium transition-all duration-200 shadow-lg hover:scale-105
+                                            whitespace-nowrap flex-shrink-0"
+                                >
+                                    <Play className="size-5 mr-2"/>
+                                    Watch Trailer
+                                </Link>
+                            </div>
+
+                            {/* Genres */}
+                            <div className="flex flex-wrap gap-2">
+                                {content?.genres?.map((genre) => (
+                                    <span
+                                        key={genre.id}
+                                        className="px-3 py-1 bg-gray-800/80 text-gray-200 rounded-full text-sm
+                                                backdrop-blur-sm border border-gray-700 flex items-center"
+                                    >
+                                        <Award className="size-3 mr-1.5 text-blue-400"/>
+                                        {genre.name}
+                                    </span>
+                                ))}
+                            </div>
+
+                            {/* Metrics */}
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-gray-300">
+                                {score !== undefined && score !== null && (
+                                    <div className="flex items-center gap-2">
+                                        <div className="px-3 py-1 bg-blue-500/20 rounded-lg text-blue-400 font-semibold flex items-center">
+                                            <Star className="size-4 mr-1.5"/>
+                                            {score.toFixed(1)}/10
+                                        </div>
+                                        <StarRating rating={score/2} maxStars={5} size="w-5 h-5" />
+                                    </div>
+                                )}
+                                <span className="flex items-center"><Calendar className="size-4 mr-1.5 text-gray-400"/>{formatReleaseDate(content?.release_date || content?.first_air_date)}</span>
+                                    {content?.runtime && (
+                                        <span className="flex items-center">
+                                            <Clock className="size-4 mr-1.5 text-gray-400"/>
+                                            {Math.floor(content.runtime / 60)}h {content.runtime % 60}m</span>
+                                    )}
+                                <span className={`font-medium flex items-center gap-1.5 ${content?.adult ? "text-red-500" : "text-green-500"}`}>
+                                    {content?.adult ? (
+                                        <EyeOff className="size-4" /> ) :
+                                    (
+                                        <Eye className="size-4"/>
+                                    )}
+                                    
+                                    {content?.adult ? "18+" : "PG-13"}
+                                </span>
+                            </div>
+
+                            {/* Overview */}
+                            <p className="text-base lg:text-lg leading-relaxed text-gray-300">
+                                {content?.overview}
+                            </p>
+
+                            {/* TV Show Episodes Modal */}
+                            {contentType === "tv" && (
+                                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+                                    <TV_Modal content={content} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Cast & Crew Section */}
+                    {(combinedMembers?.length > 0) && (hasCastMembers || hasCrewMembers) && (
+                        <div className="mb-12">
+                            <div className="flex items-center justify-between mb-8">
+                                <h2 className="text-3xl font-bold text-white">{filterRole}</h2>
+                                <select 
+                                    value={filterRole} 
+                                    onChange={handleRoleChange}
+                                    className="px-4 py-2 bg-slate-800 text-white rounded-lg border border-slate-700
+                                            hover:bg-slate-700 focus:ring-2 focus:ring-blue-400 focus:outline-none
+                                            transition-colors duration-200"
+                                >
+                                    {hasCastMembers && hasCrewMembers && (
+                                        <option value="Cast & Crew">Cast & Crew</option>
+                                    )}
+                                    {hasCastMembers && (
+                                        <option value="Cast">Cast</option>
+                                    )}
+                                    {hasCrewMembers && (
+                                        <option value="Crew">Crew</option>
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="relative group">
+                                <div ref={castSliderRef} className="flex gap-6 overflow-x-scroll scrollbar-hide pb-6">
+                                    {filteredMembers?.map((member) => (
+                                        member.profile_path && (
+                                        <Link
+                                            to={`/actor/${member.id}`}
+                                            key={`${member.id}-${member.role}`}
+                                            className="flex-none w-36 group/card"
+                                        >
+                                            <div className="rounded-xl overflow-hidden bg-gray-800 shadow-lg 
+                                                        transform transition duration-300 hover:scale-105">
+                                                <img
                                                     loading="lazy"
-                                                    src={member.profile_path ? `${ORIGINAL_IMG_BASE_URL}${member.profile_path}` : '/unavailable.jpg'}
+                                                    src={`${ORIGINAL_IMG_BASE_URL}${member.profile_path}`}
                                                     alt={member.name}
-                                                    className="w-full h-auto rounded-lg transition-transform duration-300 ease-in-out hover:scale-90"
+                                                    className="w-full aspect-[2/3] object-cover"
                                                 />
-                                                <h4 className="mt-2 text-lg font-semibold text-center">{member.name}</h4>
-                                                <p className="text-center text-sm text-gray-500 italic">{member.character || member.job}</p>
-                                                {/* <p className="text-center text-xs text-gray-500 italic">{member.role}</p> */}
+                                            <div className="p-3">
+                                                <h3 className="font-medium text-white truncate">{member.name}</h3>
+                                                <p className="text-sm text-gray-400 truncate">
+                                                {member.character || member.job || "Role Unspecified"}
+                                                </p>
+                                            </div>
+                                            </div>
+                                        </Link>
+                                        )
+                                    ))}
+                                </div>
+                                {canScrollStates.cast?.left && (
+                                    <button
+                                        onClick={() => scroll('left', castSliderRef, 'cast')}
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 p-3 z-10
+                                                bg-blue-600/90 hover:bg-blue-500 backdrop-blur rounded-full 
+                                                transition-all duration-300 opacity-0 group-hover:opacity-100
+                                                shadow-lg hover:shadow-blue-500/50 transform hover:-translate-x-1"
+                                        aria-label="Scroll left"
+                                    >
+                                        <ChevronLeft className="w-6 h-6 text-white" />
+                                    </button>
+                                )}
+                                {canScrollStates.cast?.right && (
+                                    <button
+                                        onClick={() => scroll('right', castSliderRef, 'cast')}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 p-3 z-10
+                                                bg-blue-600/90 hover:bg-blue-500 backdrop-blur rounded-full 
+                                                transition-all duration-300 opacity-0 group-hover:opacity-100
+                                                shadow-lg hover:shadow-blue-500/50 transform hover:translate-x-1"
+                                        aria-label="Scroll right"
+                                    >
+                                        <ChevronRight className="w-6 h-6 text-white" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* similar portion */}
+                    {similarContent?.length > 0 && (
+                        <div className="mb-12">
+                            <h3 className="text-3xl font-bold mb-6">Similar {contentType === "tv" ? contentType.charAt(0).toUpperCase() + contentType.charAt(1).toUpperCase() + contentType.slice(2) : contentType.charAt(0).toUpperCase() + contentType.slice(1)}</h3>
+                            <div className="relative group">
+                                <div className="flex overflow-x-scroll scrollbar-hide gap-4 pb-4" ref={similarSliderRef}>
+                                    {similarContent?.map((content) => content?.poster_path ? (
+                                        <Link key={content?.id} to={`/watch/${content?.id}`}
+                                            className="w-52 flex-none hover:text-red-300">
+                                            <img loading="lazy" src={SMALL_IMG_BASE_URL + content?.poster_path} // Fallback image
+                                                alt="Similar Poster path"
+                                                className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"/>
+                                            <h4 className="mt-2 text-lg font-semibold">
+                                                {content?.title || content?.name}
+                                            </h4>
+                                        </Link>
+                                    ) : null)}
+                                    {renderScrollButtons('similar', similarSliderRef)}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* recommendations */}
+
+                    {recommendations?.length > 0 && (
+                        <div className="mb-12">
+                            <h3 className="text-3xl font-bold mb-6">Recommended for You</h3>
+                            <div className="relative group">
+                                <div className="flex overflow-x-scroll scrollbar-hide gap-4 pb-4" 
+                                    ref={recommendationsSliderRef}>
+                                    {recommendations?.map((item) =>
+                                        item?.poster_path ? (
+                                            <Link key={item.id} to={`/watch/${item.id}`} className="w-52 flex-none hover:text-red-300">
+                                                <img
+                                                    loading="lazy"
+                                                    src={`${SMALL_IMG_BASE_URL}${item.poster_path}`}
+                                                    alt="Recommendation Poster"
+                                                    className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"
+                                                />
+                                                <h4 className="mt-2 text-lg font-semibold">{item.title || item.name}</h4>
                                             </Link>
                                         ) : null
                                     )}
                                 </div>
-
-                                {/* Chevron buttons */}
-                                <ChevronRight
-                                    onClick={() => scrollRight(castSliderRef)}
-                                    className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                        isAtEnd ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                                    }`}
-                                    disabled={isAtEnd}
-                                />
-                                <ChevronLeft
-                                    onClick={() => scrollLeft(castSliderRef)}
-                                    className={`absolute top-1/2 -translate-y-1/2 left-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                        isAtStart ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                                    }`}
-                                    disabled={isAtStart}
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right Section: Poster Image */}
-                    <div className="w-full md:w-1/2">
-                        <img loading="lazy"
-                            src={content?.poster_path ? ORIGINAL_IMG_BASE_URL + content?.poster_path : '/unavailable.jpg'}
-                            alt="Poster image"
-                            className="max-h-[700px] w-full object-cover rounded-md"
-                            />
-                        <h1 className="text-center text-xl mt-3 font-extrabold italic mb-10">{content?.tagline ? `"${content?.tagline}"` : null}</h1>
-                        
-                        {/* TV List - Modal Trigger */}
-                        {contentType === "tv" && <TV_Modal content={content} />}
-                    </div>
-                </div>
-                
-                {/* similar portion */}
-                {similarContent?.length > 0 && (
-                    <div className="mt-12 max-w-5xl mx-auto relative group">
-                        <h3 className="text-4xl font-bold mb-4">Similar {contentType === "tv" ? contentType.charAt(0).toUpperCase() + contentType.charAt(1).toUpperCase() + contentType.slice(2) : contentType.charAt(0).toUpperCase() + contentType.slice(1)}</h3>
-                        <div className="flex overflow-x-scroll scrollbar-hide gap-4 pb-4 group"
-                        ref={similarSliderRef}>
-                            {similarContent?.map((content) => content?.poster_path ? (
-                                <Link key={content?.id} to={`/watch/${content?.id}`}
-                                    className="w-52 flex-none hover:text-red-300">
-                                    <img loading="lazy" src={SMALL_IMG_BASE_URL + content?.poster_path} // Fallback image
-                                        alt="Similar Poster path"
-                                        className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"/>
-                                    <h4 className="mt-2 text-lg font-semibold">
-                                        {content?.title || content?.name}
-                                    </h4>
-                                </Link>
-                            ) : null)}
-                        <ChevronRight 
-                            onClick={() => scrollRight(similarSliderRef)} 
-                            className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                isAtEndSimilar ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                            }`}
-                            disabled={isAtEndSimilar}
-                        />
-                        <ChevronLeft 
-                            onClick={() => scrollLeft(similarSliderRef)} 
-                            className={`absolute top-1/2 -translate-y-1/2 left-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                isAtStartSimilar ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                            }`}
-                            disabled={isAtStartSimilar}
-                        />
-                        </div>
-                    </div>
-                )}
-
-                {/* recommendations */}
-                {recommendations?.length > 0 && (
-                    <div className="mt-5 max-w-5xl mx-auto relative group">
-                        <h3 className="text-4xl font-bold mb-4">Recommended for You</h3>
-                        <div className="relative">
-                            <div className="flex overflow-x-scroll scrollbar-hide gap-4 pb-4" 
-                                ref={recommendationsSliderRef}>
-                                {recommendations?.map((item) =>
-                                    item?.poster_path ? (
-                                        <Link key={item.id} to={`/watch/${item.id}`} className="w-52 flex-none hover:text-red-300">
-                                            <img
-                                                loading="lazy"
-                                                src={`${SMALL_IMG_BASE_URL}${item.poster_path}`}
-                                                alt="Recommendation Poster"
-                                                className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"
-                                            />
-                                            <h4 className="mt-2 text-lg font-semibold">{item.title || item.name}</h4>
-                                        </Link>
-                                    ) : null
-                                )}
-                            </div>
-                            
-                            <ChevronRight
-                                onClick={() => scrollRight(recommendationsSliderRef)} 
-                                className={`absolute top-1/2 -translate-y-1/2 right-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                    isAtEndRecommend ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                                }`}
-                                disabled={isAtEndRecommend}/>
-                            <ChevronLeft
-                               onClick={() => scrollLeft(recommendationsSliderRef)} 
-                               className={`absolute top-1/2 -translate-y-1/2 left-2 w-8 h-8 transition-all duration-300 cursor-pointer bg-[#000035] text-white rounded-full z-20 ${
-                                   isAtStartRecommend ? 'opacity-0 cursor-not-allowed' : 'opacity-0 group-hover:opacity-100'
-                               }`}
-                               disabled={isAtStartRecommend}/>
-                        </div>
-                    </div>
-                )}
-
-                {/*Reviews portion*/}
-
-                <div className="mt-10 max-w-5xl mx-auto relative py-4">
-                    <h2 className="text-4xl font-bold mb-8">Reviews</h2>
-                    {reviewContent?.results.length === 0 ? (
-                        <p className="mt-4 text-white italic">No reviews available at this time.</p>
-                    ) : (
-                        <div className="relative group max-w-5xl mx-auto">
-                            <div className="flex items-center justify-between w-full">
-                                {/* Left Chevron */}
-                                <ChevronLeft onClick={currentReviewIndex > 0 ? goToPrevReview : null}
-                                    className={`w-8 h-8 transition-opacity duration-300 cursor-pointer 
-                                        bg-[#000035] text-white rounded-full z-20
-                                        ${currentReviewIndex === 0 ? 'opacity-0' : 'opacity-0'}
-                                        ${currentReviewIndex > 0 ? 'group-hover:opacity-100' : 'cursor-not-allowed'}
-                                    `}
-                                    disabled={currentReviewIndex === 0}
-                                />
-
-                                {/* Current Review */}
-                                <div ref={reviewersSliderRef} className="max-w-3xl w-full mx-4">
-                                    {/* Avatar and Username */}
-                                    <div className="flex items-center justify-between w-full mb-4">
-                                        <div className="flex items-center">
-                                            <img loading="lazy"
-                                                src={`https://image.tmdb.org/t/p/w200/${reviewContent?.results[currentReviewIndex].author_details.avatar_path}`}
-                                                alt={`${reviewContent?.results[currentReviewIndex].author} Avatar`}
-                                                className="w-20 h-20 rounded-full mr-4"
-                                            />
-                                        </div>
-                                        <span className="text-lg font-bold text-right">
-                                            {reviewContent?.results[currentReviewIndex].author_details.username}
-                                        </span>
-                                    </div>
-
-                                    {/* Review Content */}
-                                    <p className="text-lg">
-                                        {expandedIndex === currentReviewIndex || reviewContent?.results[currentReviewIndex].content.length <= 300
-                                            ? reviewContent?.results[currentReviewIndex].content
-                                            : `${reviewContent?.results[currentReviewIndex].content.slice(0, 300)}...`}
-                                        {reviewContent?.results[currentReviewIndex].content.length > 300 && (
-                                            <button onClick={() => toggleContent(currentReviewIndex)} className="text-white hover:text-blue-600">
-                                                {expandedIndex === currentReviewIndex ? `\u00A0See less` : `\u00A0See more`}
-                                            </button>
-                                        )}
-                                    </p>
-
-                                    {/* Date and Rating */}
-                                    {/* Date, Rating, and Review Counter */}
-                                    <div className="mt-4 flex items-center justify-between">
-                                        <p className="text-blue-200 text-sm">
-                                            {new Date(reviewContent?.results[currentReviewIndex]?.created_at).toLocaleDateString()}
-                                            {" | Rated: "}
-                                            {reviewContent?.results[currentReviewIndex]?.author_details.rating
-                                                ? `${reviewContent?.results[currentReviewIndex]?.author_details.rating}/10`
-                                                : "N/A"
-                                            }
-                                        </p>
-                                        
-                                        {/* Review Counter */}
-                                        <span className="text-sm font-medium bg-blue-900/50 text-blue-200 px-3 py-1 rounded-full">
-                                            {currentReviewIndex + 1}/{reviewContent?.results.length}
-                                        </span>
-                                    </div>
-
-                                    {/* Star Rating */}
-                                    {reviewContent?.results[currentReviewIndex].author_details.rating && (
-                                        <div className="flex space-x-3 mt-2">
-                                            <StarRating
-                                                rating={reviewContent?.results[currentReviewIndex].author_details.rating / 2}
-                                                maxStars={5}
-                                                size="w-6 h-6"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Right Chevron */}
-                                <ChevronRight
-                                    onClick={currentReviewIndex < reviewContent?.results.length - 1 ? goToNextReview : null}
-                                    className={`w-8 h-8 transition-opacity duration-300 cursor-pointer 
-                                        bg-[#000035] text-white rounded-full z-20
-                                        ${currentReviewIndex === reviewContent?.results.length - 1 ? 'opacity-0' : 'opacity-0'}
-                                        ${currentReviewIndex < reviewContent?.results.length - 1 ? 'group-hover:opacity-100' : 'cursor-not-allowed'}
-                                    `}
-                                    disabled={currentReviewIndex === reviewContent?.results.length - 1}
-                                />
+                                {renderScrollButtons('recommendations', recommendationsSliderRef)}
                             </div>
                         </div>
                     )}
+
+                    {/*Reviews portion*/}
+
+                    <div className="mb-12">
+                        <h2 className="text-3xl font-bold mb-6">Reviews</h2>
+                        {reviewContent?.results.length === 0 ? (
+                            <p className="text-white italic">No reviews available at this time.</p>
+                        ) : (
+                            <div className="bg-slate-800/50 rounded-xl p-6">
+                                <div className="flex items-center justify-between w-full">
+                                    {/* Left Chevron */}
+                                    <div className={`w-12 flex-shrink-0 ${currentReviewIndex === 0 ? 'invisible' : 'visible'}`}>
+                                        <button
+                                            onClick={goToPrevReview}
+                                            className={`p-2 bg-black/50 rounded-full transition-all duration-300 transform hover:scale-110`}
+                                            disabled={currentReviewIndex === 0}
+                                        >
+                                            <ChevronLeft className="w-6 h-6 text-white" />
+                                        </button>
+                                    </div>
+                                    {/* Current Review */}
+                                    <div ref={reviewersSliderRef} className="flex-1 mx-4 min-h-[50vh">
+                                        {/* Avatar and Username */}
+                                        <div className="flex items-center justify-between w-full mb-4">
+                                            <div className="flex items-center">
+                                                <img loading="lazy"
+                                                    src={`https://image.tmdb.org/t/p/w200/${reviewContent?.results[currentReviewIndex].author_details.avatar_path}`}
+                                                    alt={`${reviewContent?.results[currentReviewIndex].author} Avatar`}
+                                                    className="w-20 h-20 rounded-full mr-4"
+                                                />
+                                            </div>
+                                            <span className="text-lg font-bold text-right">
+                                                {reviewContent?.results[currentReviewIndex].author_details.username}
+                                            </span>
+                                        </div>
+
+                                        {/* Review Content */}
+                                        <p className="text-lg">
+                                            {expandedIndex === currentReviewIndex || reviewContent?.results[currentReviewIndex].content.length <= 300
+                                                ? reviewContent?.results[currentReviewIndex].content
+                                                : `${reviewContent?.results[currentReviewIndex].content.slice(0, 300)}...`}
+                                            {reviewContent?.results[currentReviewIndex].content.length > 300 && (
+                                                <button onClick={() => toggleContent(currentReviewIndex)} className="text-white hover:text-blue-600">
+                                                    {expandedIndex === currentReviewIndex ? `\u00A0See less` : `\u00A0See more`}
+                                                </button>
+                                            )}
+                                        </p>
+
+                                        {/* Date, Rating, and Review Counter */}
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <p className="text-blue-200 text-sm">
+                                                {new Date(reviewContent?.results[currentReviewIndex]?.created_at).toLocaleDateString()}
+                                                {" | Rated: "}
+                                                {reviewContent?.results[currentReviewIndex]?.author_details.rating
+                                                    ? `${reviewContent?.results[currentReviewIndex]?.author_details.rating}/10`
+                                                    : "N/A"
+                                                }
+                                            </p>
+                                            
+                                            {/* Review Counter */}
+                                            <span className="text-sm font-medium bg-blue-900/50 text-blue-200 px-3 py-1 rounded-full">
+                                                {currentReviewIndex + 1}/{reviewContent?.results.length}
+                                            </span>
+                                        </div>
+
+                                        {/* Star Rating */}
+                                        {reviewContent?.results[currentReviewIndex].author_details.rating && (
+                                            <div className="flex space-x-3 mt-2">
+                                                <StarRating
+                                                    rating={reviewContent?.results[currentReviewIndex].author_details.rating / 2}
+                                                    maxStars={5}
+                                                    size="w-6 h-6"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Right Chevron */}
+                                    <div className={`w-12 flex-shrink-0 ${currentReviewIndex === reviewContent?.results.length - 1 ? 'invisible' : 'visible'}`}>
+                                        <button
+                                            onClick={goToNextReview}
+                                            className={`p-2 bg-black/50 rounded-full transition-all duration-300 transform hover:scale-110`}
+                                            disabled={currentReviewIndex === reviewContent?.results.length - 1}
+                                        >
+                                            <ChevronRight className="w-6 h-6 text-white" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* gallery section */}
+                    <Gallery contentImages={contentImages} ORIGINAL_IMG_BASE_URL={ORIGINAL_IMG_BASE_URL}/>
                 </div>
             </div>
         </div>

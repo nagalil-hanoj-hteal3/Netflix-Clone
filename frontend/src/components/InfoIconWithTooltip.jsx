@@ -29,7 +29,7 @@ const InfoIconWithTooltip = ({ content, className = "" }) => {
 
     return (
         <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
-            <Info className={`ml-10 h-8 w-8 text-gray-300 hover:text-blue-600 cursor-pointer ${className}`}
+            <Info className={`ml-10 mt-1 lg:mt-2 h-7 w-7 text-gray-300 hover:text-blue-600 cursor-pointer ${className}`}
             onClick={toggleVisibility}/>
             
             {isVisible && (

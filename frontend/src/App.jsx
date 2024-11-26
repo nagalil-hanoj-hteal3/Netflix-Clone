@@ -15,10 +15,11 @@ import NotFound from "./pages/NotFound";
 import ActorPage from "./pages/ActorPage";
 import MoreInfoPage from "./pages/MoreInfoPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
+import TrendingPage from "./pages/TrendingPage.jsx";
 
 function App() {
   const {user, isCheckingAuth, authCheck} = useAuthStore();
-  console.log(user, isCheckingAuth);
+  // console.log(user, isCheckingAuth);
 
   useEffect(() => {
     authCheck();
@@ -61,6 +62,8 @@ function App() {
       <Route path="/:type/moreinfo/:id" element={user ? <MoreInfoPage/> : <Navigate to={"/"}/>}/>
 
       <Route path="/account" element={user ? <AccountPage/> : <Navigate to={"/"}/>}/>
+
+      <Route path="/trending" element={user ? <TrendingPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>

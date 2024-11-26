@@ -68,7 +68,7 @@ export const WatchPage = () => {
         <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-950">
             <Navbar/>
             
-            <main className="container mx-auto px-4 py-6">
+            <main className="container mx-auto px-4 py-6 max-w-7xl">
                 {/* Title and Navigation Bar */}
                 <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <h1 className="text-2xl md:text-3xl font-bold text-white">
@@ -77,7 +77,7 @@ export const WatchPage = () => {
                     
                     <div className="flex items-center gap-2">
                         {trailers.length > 0 && (
-                            <>
+                            <div className="flex items-center gap-2">
                                 <button 
                                     className={`bg-slate-800 hover:bg-slate-700 text-white p-2 rounded-full transition-all duration-200 ${currentTrailerIdx === 0 ? "opacity-50 cursor-not-allowed" : "hover:scale-105"}`} 
                                     onClick={handlePrev} 
@@ -97,7 +97,7 @@ export const WatchPage = () => {
                                 >
                                     <ChevronRight className="size-5" />
                                 </button>
-                            </>
+                            </div>
                         )}
 
                         <Link 
@@ -111,44 +111,38 @@ export const WatchPage = () => {
                 </div>
 
                 {/* Video Player Container */}
-                <div className="relative rounded-xl overflow-hidden bg-slate-800 shadow-2xl">
-                    {trailers.length > 0 ? (
-                        <div className="aspect-video">
-                            <ReactPlayer
-                                controls={true}
-                                width="100%"
-                                height="100%"
-                                className="absolute top-0 left-0"
-                                url={`https://www.youtube.com/watch?v=${trailers[currentTrailerIdx].key}`}
-                            />
-                        </div>
-                    ) : (
-                        <div className="aspect-video flex flex-col items-center justify-center p-8 text-center">
-                            <img
-                                src="/404.png"
-                                alt="No trailers available"
-                                className="max-w-md w-full h-auto rounded-lg mb-6 opacity-80"
-                            />
-                            <h2 className="text-xl text-slate-300">
-                                Sorry, we currently do not have trailers for{" "}
-                                <span className="font-semibold text-blue-400">
-                                    {content?.title || content?.name}
-                                </span>
-                            </h2>
-                            <p className="text-slate-400 mt-2">
-                                Check back later or view more information about this title.
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {trailers.length > 0 && (
-                    <div className="mt-4 px-4">
-                        <h3 className="text-slate-300 text-sm">
-                            Trailer {currentTrailerIdx + 1} of {trailers.length}
-                        </h3>
+                <div className="relative w-full rounded-xl overflow-hidden bg-slate-800 shadow-2xl">
+                    <div className="max-w-screen-2xl mx-auto">
+                        {trailers.length > 0 ? (
+                            <div className="relative w-full aspect-video">
+                                <ReactPlayer
+                                    controls={true}
+                                    width="100%"
+                                    height="100%"
+                                    className="absolute top-0 left-0"
+                                    url={`https://www.youtube.com/watch?v=${trailers[currentTrailerIdx].key}`}
+                                />
+                            </div>
+                        ) : (
+                            <div className="aspect-video flex flex-col items-center justify-center p-4 sm:p-8 text-center">
+                                <img
+                                    src="/404.png"
+                                    alt="No trailers available"
+                                    className="max-w-xs sm:max-w-md w-full h-auto rounded-lg mb-4 sm:mb-6 opacity-80"
+                                />
+                                <h2 className="text-lg sm:text-xl text-slate-300">
+                                    Sorry, we currently do not have trailers for{" "}
+                                    <span className="font-semibold text-blue-400">
+                                        {content?.title || content?.name}
+                                    </span>
+                                </h2>
+                                <p className="text-sm sm:text-base text-slate-400 mt-2">
+                                    Check back later or view more information about this title.
+                                </p>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </main>
         </div>
     );

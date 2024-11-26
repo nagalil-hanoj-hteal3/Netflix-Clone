@@ -5,107 +5,11 @@ import toast from "react-hot-toast";
 import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import Navbar from "../components/Navbar";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
-import { ChevronLeft, ChevronRight, X, Calendar, MapPin, User, Link as LinkIcon, Star, Film, Tv, Camera, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Film, Tv, Camera } from "lucide-react";
 import { useContentStore } from "../store/content";
-
-const calculateAge = (birthday, deathday) => {
-    const birthDate = new Date(birthday);
-    const endDate = deathday ? new Date(deathday) : new Date();
-    let age = endDate.getFullYear() - birthDate.getFullYear();
-    const monthDiff = endDate.getMonth() - birthDate.getMonth();
-    const dayDiff = endDate.getDate() - birthDate.getDate();
-
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-
-    return age;
-};
-
-const Modal = ({ isOpen, onClose, title, content }) => {
-    if (!isOpen) return null;
-
-    const modalContent = Array.isArray(content) ? content : [content];
-    const isSingleImage = modalContent.length === 1;
-    const isMovieModal = title.includes("Movies");
-    const isTVModal = title.includes("TV Shows");
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-            <div className={`
-                ${isSingleImage 
-                    ? 'w-full h-full max-w-full max-h-full p-4' 
-                    : 'bg-gray-800 p-6 rounded-lg w-full max-w-4xl md:max-w-3xl sm:max-w-xl'}
-                text-white relative flex flex-col
-            `}>
-                {!isSingleImage && (
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold">{title}</h2>
-                        <button 
-                            onClick={onClose} 
-                            className="text-white hover:text-gray-300"
-                        >
-                            <X size={24} />
-                        </button>
-                    </div>
-                )}
-
-                {isSingleImage && (
-                    <button 
-                        onClick={onClose} 
-                        className="absolute top-4 right-4 text-white hover:text-gray-300 z-50"
-                    >
-                        <X size={32} />
-                    </button>
-                )}
-
-                <div className={`
-                    ${isSingleImage 
-                        ? 'w-full h-full flex items-center justify-center' 
-                        : 'grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto'}
-                    overflow-y-auto max-h-[100vh]
-                `}>
-                    {modalContent.map((item, idx) => (
-                        <div 
-                            key={idx} 
-                            className={`
-                                ${isSingleImage 
-                                    ? 'w-full h-full flex items-center justify-center' 
-                                    : 'flex flex-col items-center relative group transform transition-all duration-500 hover:scale-90'}
-                            `}
-                        >
-                            {(isMovieModal || isTVModal) ? (
-                                <Link
-                                    to={`/${isMovieModal ? 'movie' : 'tv'}/moreinfo/${item.id}`}
-                                    onClick={() => 
-                                        useContentStore.getState().setContentType(isMovieModal ? 'movie' : 'tv')
-                                    }
-                                    className="w-full h-full"
-                                >
-                                    <img
-                                        src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                        alt={item.title || item.name || `Image ${idx + 1}`}
-                                        className={'w-full h-full object-cover rounded-lg'}
-                                    />
-                                </Link>
-                            ) : (
-                                <img
-                                    src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                    alt={item.title || item.name || `Image ${idx + 1}`}
-                                    className={`
-                                        ${isSingleImage 
-                                            ? 'max-w-full max-h-full object-contain' 
-                                            : 'w-full h-full object-cover rounded-lg'}
-                                    `}
-                                />
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
+import { Modal } from "../components/actors/Modal";
+import { ActorHeader } from "../components/actors/ActorHeader";
+import { ActorBody } from "../components/actors/ActorBody";
 
 export const ActorPage = () => {
     const { id } = useParams();
@@ -193,6 +97,7 @@ export const ActorPage = () => {
         fetchActorImages();
         fetchActorMovies();
         fetchActorTVs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const openModal = (title, content) => {
@@ -255,6 +160,10 @@ export const ActorPage = () => {
         };
     }, [actorMovies, actorTVs, actorImages]);
 
+    const hasExternalLinks = actorDetails?.homepage || actorDetails?.imdb_id;
+
+    if (!hasExternalLinks) return null;
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-r from-purple-800 via-blue-800 to-black p-10">
@@ -283,133 +192,10 @@ export const ActorPage = () => {
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-20 space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-12">
-                    <div className="flex flex-col items-center md:items-start">
-                        <div className="relative group">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-400 rounded-lg blur opacity-25 group-hover:opacity-75 transition duration-1000"></div>
-                            <img 
-                                src={`${ORIGINAL_IMG_BASE_URL}${actorDetails?.profile_path}`}
-                                alt={actorDetails?.name}
-                                className="relative sm:w-auto sm:h-72 md:w-96 md:h-auto rounded-lg shadow-2xl object-cover transform transition-all duration-500 hover:scale-105"
-                            />
-                        </div>
-                        <div className="text-center md:ml-20 mt-6 space-y-2">
-                            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-                                {actorDetails?.name}
-                            </h1>
-                            <p className="text-blue-400 text-xl font-medium">
-                                {actorDetails?.known_for_department}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-8 backdrop-blur-sm bg-slate-900/50 p-8 rounded-2xl shadow-xl">
-                        <div className="space-y-4">
-                            <h2 className="text-3xl font-semibold text-blue-400">Biography</h2>
-                            <p className="text-slate-300 leading-relaxed">
-                                {showBio ? actorDetails?.biography : `${actorDetails?.biography.slice(0, 400)}`}
-                                {actorDetails?.biography.length > 400 && (
-                                    <button
-                                        onClick={() => setShowBio(!showBio)}
-                                        className="ml-2 text-blue-400 hover:text-blue-300 transition-colors"
-                                    >
-                                        {showBio ? "See Less" : "See More"}
-                                    </button>
-                                )}
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h2 className="text-3xl font-semibold text-blue-400">Details</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="flex items-center space-x-3">
-                                    <Calendar className="text-blue-400" />
-                                    <div>
-                                    <p className="text-slate-400 text-sm">Birthday</p>
-                                    <p className="text-slate-200">
-                                        {actorDetails?.birthday ? (
-                                        <>
-                                            {actorDetails?.birthday} 
-                                            {actorDetails?.deathday 
-                                            ? ` - ${actorDetails?.deathday} (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})` 
-                                            : ` (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})`
-                                            }
-                                        </>
-                                        ) : "N/A"}
-                                    </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <MapPin className="text-blue-400" />
-                                    <div>
-                                        <p className="text-slate-400 text-sm">Place of Birth</p>
-                                        <p className="text-slate-200">{actorDetails?.place_of_birth || "N/A"}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <User className="text-blue-400" />
-                                    <div>
-                                        <p className="text-slate-400 text-sm">Gender</p>
-                                        <p className="text-slate-200">{actorDetails?.gender === 1 ? "Female" : "Male"}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-3">
-                                    <Star className="text-blue-400" />
-                                    <div>
-                                        <p className="text-slate-400 text-sm">Popularity</p>
-                                        <p className="text-slate-200">{actorDetails?.popularity}</p>
-                                    </div>
-                                </div>
-
-                                {actorDetails?.also_known_as && actorDetails.also_known_as.length > 0 && (
-                                    <div className="mt-4">
-                                        <h3 className="text-xl font-semibold text-blue-400 mb-2">Also Known As</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                        {actorDetails.also_known_as.map((name, index) => (
-                                            <span 
-                                            key={index} 
-                                            className="bg-slate-700 text-slate-200 px-2 py-1 rounded text-sm"
-                                            >
-                                            {name}
-                                            </span>
-                                        ))}
-                                        </div>
-                                    </div>
-                                    )}
-                                
-                                <div className="flex space-x-4 mt-4">
-                                    {/* Homepage Link */}
-                                    {actorDetails?.homepage && (
-                                        <a
-                                        href={actorDetails?.homepage}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
-                                        >
-                                        <LinkIcon size={16} />
-                                        <span>Website</span>
-                                        </a>
-                                    )}
-
-                                    {/* IMDB Link */}
-                                    {actorDetails?.imdb_id && (
-                                        <a
-                                        href={`https://www.imdb.com/name/${actorDetails.imdb_id}/`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors"
-                                        >
-                                        <ExternalLink size={16} />
-                                        <span>Learn More</span>
-                                        </a>
-                                    )}
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
+                    {/* actor header */}
+                    <ActorHeader actorDetails={actorDetails} ORIGINAL_IMG_BASE_URL={ORIGINAL_IMG_BASE_URL}/>
+                    {/* actor body */}
+                    <ActorBody actorDetails={actorDetails} showBio={showBio} setShowBio={setShowBio}/>
                 </div>
 
                 {/* Movies Section */}

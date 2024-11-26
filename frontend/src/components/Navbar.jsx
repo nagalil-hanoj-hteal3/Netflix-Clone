@@ -40,19 +40,27 @@ const Navbar = () => {
                             <span className="absolute inset-x-0 bottom-[-4px] h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                         </Link>
                         <Link 
+                            to="/trending" 
+                            className="hover:text-white transition-colors duration-200 relative group whitespace-nowrap"
+                        >
+                            Trending
+                            <span className="absolute inset-x-0 bottom-[-4px] h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
+                        </Link>
+                        <Link 
                             to="/history" 
                             className="hover:text-white transition-colors duration-200 relative group whitespace-nowrap"
                         >
                             Search History
                             <span className="absolute inset-x-0 bottom-[-4px] h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                         </Link>
+                        
                     </div>
                 </div>
 
                 <div className="flex items-center gap-4 md:gap-6">
                     <Link 
                         to="/search" 
-                        className="text-slate-300 hover:text-white transition-colors duration-200"
+                        className="text-slate-300 hover:text-blue-500 transition-colors duration-200"
                         onClick={() => isMobileMenuOpen && toggleMobileMenu()}
                     >
                         <Search className="size-5 md:size-6" />
@@ -67,7 +75,7 @@ const Navbar = () => {
                         </div>
                     </Link>
                     <button 
-                        className="text-slate-300 hover:text-white transition-colors duration-200"
+                        className="text-slate-300 hover:text-blue-500 transition-colors duration-200"
                         onClick={logout}
                     >
                         <LogOut className="size-5 md:size-6" />

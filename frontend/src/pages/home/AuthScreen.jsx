@@ -12,6 +12,11 @@ const AuthScreen = () => {
         navigate("/signup?email=" + email);
     }
 
+    const handleLogin = (e) => {
+        e.preventDefault();
+        navigate("/login");
+    }
+
     return (
         <div className="min-h-screen bg-slate-950">
             {/* Hero Section with Background Image */}
@@ -43,36 +48,53 @@ const AuthScreen = () => {
                             <TvMinimalPlay className="size-8 text-pink-400 animate-pulse delay-100" />  
                         </div>
                         
+                        {/* Main Content */}
                         <h1 className="text-5xl lg:text-7xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-transparent bg-clip-text animate-gradient">
-                            Unlimited trailers for movies, TV shows, and more
+                        Unlimited trailers for movies, TV shows, and more
                         </h1>
                         
                         <p className="text-blue-200 text-xl lg:text-2xl font-medium">
-                            Your Front Row Seat to the Latest Trailers
+                        Your Front Row Seat to the Latest Trailers
                         </p>
                         
                         <p className="text-slate-300 text-lg leading-relaxed max-w-2xl mx-auto">
-                            Join millions of viewers exploring endless entertainment. Premium content, exclusive originals, and live events - all in one place.
+                        Join millions of viewers exploring endless entertainment. Premium content, exclusive originals, and live events - all in one place.
                         </p>
 
-                        <form 
-                            className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto mt-8"
-                            onSubmit={handleFormSubmit}
-                        >
-                            <input 
+                        {/* Action Buttons Container */}
+                        <div className="space-y-4">
+                        {/* Sign Up Form */}
+                            <form 
+                                className="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto"
+                                onSubmit={handleFormSubmit}
+                            >
+                                <input 
                                 type="email" 
                                 className="flex-1 bg-slate-900/80 backdrop-blur-sm text-white border border-slate-700 rounded-lg px-6 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Enter your email to begin"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                            />
-                            <button 
+                                />
+                                <button 
+                                type="submit"
                                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition-all"
-                            >
+                                >
                                 Start Exploring
                                 <ChevronRight className="size-5" />
-                            </button>
-                        </form>
+                                </button>
+                            </form>
+
+                            {/* Login Section */}
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="text-slate-400">Already have an account?</span>
+                                <button 
+                                onClick={handleLogin}
+                                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                                >
+                                Log in
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
