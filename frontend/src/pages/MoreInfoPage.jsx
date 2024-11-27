@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { useContentStore } from "../store/content";
 import axios from "axios";
 import Navbar from "../components/Navbar";
-import { ChevronLeft, ChevronRight, Play, Clock, Calendar, Star, Eye, EyeOff, Award, Bookmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Clock, Calendar, Star, Eye, EyeOff, Award, Bookmark, User } from "lucide-react";
 import { ORIGINAL_IMG_BASE_URL, SMALL_IMG_BASE_URL } from "../utils/constants";
 import { formatReleaseDate } from "../utils/dateFunction";
 import StarRating from "../components/StarRating";
@@ -47,16 +47,21 @@ function MoreInfoPage() {
 
     const combinedMembers = [
         ...(castMember?.cast?.map(member => ({ ...member, role: 'Cast' })) || []),
-        ...(castMember?.crew?.map(member => ({ ...member, role: 'Crew' })) || [])
+        ...(castMember?.crew?.map(member => ({ 
+            ...member, 
+            role: member.job === 'Director' ? 'Director' : 'Crew' 
+        })) || [])
     ];
 
     const hasCastMembers = combinedMembers?.some(member => member.role === "Cast" && member.profile_path);
-    const hasCrewMembers = combinedMembers?.some(member => member.role === "Crew" && member.profile_path);
-
+    const hasCrewMembers = combinedMembers?.some(member => 
+        (member.role === "Crew" || member.role === "Director") && 
+        member.profile_path
+    );
     // console.log("content: ", content);
     // console.log("similar : ", similarContent);
     // console.log("review: ", reviewContent);
-    // console.log("cast member: ", castMember);
+    // console.log("cast member: ", castMember?.crew[0]?.name);
     // console.log("recommendations: ", recommendations);
     // console.log("test: ", contentImages);
 
@@ -297,8 +302,18 @@ function MoreInfoPage() {
 
     const uniqueMembersMap = new Map();
     combinedMembers.forEach(member => {
+        const existingMember = uniqueMembersMap.get(member.id);
         if (!uniqueMembersMap.has(member.id)) {
             uniqueMembersMap.set(member.id, member);
+        } else {
+            // If the member already exists, update with more specific role information
+            if (
+                member.job === 'Director' || 
+                member.role === 'Director' || 
+                (existingMember.role !== 'Director' && member.role === 'Director')
+            ) {
+                uniqueMembersMap.set(member.id, member);
+            }
         }
     });
 
@@ -310,9 +325,15 @@ function MoreInfoPage() {
 
     const filteredMembers = uniqueMembers?.filter((member) => {
         if (filterRole === "Cast") return member.role === "Cast";
-        if (filterRole === "Crew") return member.role === "Crew";
+        if (filterRole === "Crew") return member.role === "Crew" && member.job !== "Director";
+        if (filterRole === "Director") { 
+            const isDirector = member.role === "Director" || member.job === "Director";
+            return isDirector;
+        }
         return true; // "Cast & Crew" shows all
     }) || [];
+
+    // console.log('Filtered Members:', filteredMembers);
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 text-white">
@@ -356,6 +377,16 @@ function MoreInfoPage() {
                                     </h1>
                                     {content?.tagline && (
                                         <p className="text-base lg:text-lg text-gray-300 italic line-clamp-2">"{content.tagline}"</p>
+                                    )}
+                                    {uniqueMembers.some(member => member.role === "Director") && (
+                                        <p className="text-sm lg:text-base text-gray-400 mt-2">
+                                            Directed by: {" "}
+                                            <span className="text-white font-medium">
+                                                {uniqueMembers.filter(member => member.role === "Director")
+                                                    .map(director => director.name)
+                                                    .join(", ")}
+                                            </span>
+                                        </p>
                                     )}
                                 </div>
                                 <div className="flex flex-row items-center justify-start gap-2">
@@ -456,13 +487,15 @@ function MoreInfoPage() {
                                     {hasCrewMembers && (
                                         <option value="Crew">Crew</option>
                                     )}
+                                    {combinedMembers.some(member => member.job === 'Director') && (
+                                        <option value="Director">Director</option>
+                                    )}
                                 </select>
                             </div>
 
                             <div className="relative group">
                                 <div ref={castSliderRef} className="flex gap-6 overflow-x-scroll scrollbar-hide pb-6">
                                     {filteredMembers?.map((member) => (
-                                        member.profile_path && (
                                         <Link
                                             to={`/actor/${member.id}`}
                                             key={`${member.id}-${member.role}`}
@@ -470,12 +503,18 @@ function MoreInfoPage() {
                                         >
                                             <div className="rounded-xl overflow-hidden bg-gray-800 shadow-lg 
                                                         transform transition duration-300 hover:scale-105">
-                                                <img
-                                                    loading="lazy"
-                                                    src={`${ORIGINAL_IMG_BASE_URL}${member.profile_path}`}
-                                                    alt={member.name}
-                                                    className="w-full aspect-[2/3] object-cover"
-                                                />
+                                                {member.profile_path ? (
+                                                    <img
+                                                        loading="lazy"
+                                                        src={`${ORIGINAL_IMG_BASE_URL}${member.profile_path}`}
+                                                        alt={member.name}
+                                                        className="w-full aspect-[2/3] object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                                                        <User className="w-12 h-12 text-gray-400" />
+                                                    </div>
+                                                )}
                                             <div className="p-3">
                                                 <h3 className="font-medium text-white truncate">{member.name}</h3>
                                                 <p className="text-sm text-gray-400 truncate">
@@ -484,7 +523,7 @@ function MoreInfoPage() {
                                             </div>
                                             </div>
                                         </Link>
-                                        )
+                                        
                                     ))}
                                 </div>
                                 {canScrollStates.cast?.left && (

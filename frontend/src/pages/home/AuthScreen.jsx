@@ -1,11 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import TrailerLoadingScreen from "../../components/skeletons/LoadingWebsite.jsx";
 import { ChevronRight, Film, Tv, TvMinimalPlay, Gamepad, Popcorn } from "lucide-react";
 
 const AuthScreen = () => {
     const [email, setEmail] = useState("");
     const [imgLoading, setImgLoading] = useState(true);
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 2000);
+        return () => clearTimeout(timer);
+    }, []);
 
     const handleFormSubmit = (e) => {
         e.preventDefault();
@@ -15,6 +22,10 @@ const AuthScreen = () => {
     const handleLogin = (e) => {
         e.preventDefault();
         navigate("/login");
+    }
+
+    if(isLoading){
+        return <TrailerLoadingScreen/>;
     }
 
     return (
