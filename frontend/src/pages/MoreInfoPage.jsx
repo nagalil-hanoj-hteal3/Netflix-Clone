@@ -625,14 +625,23 @@ function MoreInfoPage() {
                                     </div>
                                     {/* Current Review */}
                                     <div ref={reviewersSliderRef} className="flex-1 mx-4 min-h-[50vh">
-                                        {/* Avatar and Username */}
+                                        {/* Avatar and Username */} 
                                         <div className="flex items-center justify-between w-full mb-4">
                                             <div className="flex items-center">
-                                                <img loading="lazy"
-                                                    src={`https://image.tmdb.org/t/p/w200/${reviewContent?.results[currentReviewIndex].author_details.avatar_path}`}
-                                                    alt={`${reviewContent?.results[currentReviewIndex].author} Avatar`}
-                                                    className="w-20 h-20 rounded-full mr-4"
-                                                />
+                                                {reviewContent?.results[currentReviewIndex].author_details.avatar_path ? (
+                                                    <img
+                                                        loading="lazy"
+                                                        src={`https://image.tmdb.org/t/p/w200/${reviewContent?.results[currentReviewIndex].author_details.avatar_path}`}
+                                                        alt={`${reviewContent?.results[currentReviewIndex].author} Avatar`}
+                                                        className="w-20 h-20 rounded-full mr-4"
+                                                    />
+                                                ) : (
+                                                    <div 
+                                                        className="w-20 h-20 rounded-full mr-4 bg-gray-700 flex items-center justify-center"
+                                                    >
+                                                        <User className="w-10 h-10 text-gray-400" />
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="text-lg font-bold text-right">
                                                 {reviewContent?.results[currentReviewIndex].author_details.username}
