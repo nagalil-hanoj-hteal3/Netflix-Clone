@@ -6,8 +6,9 @@ import authRoutes from "./routes/auth.route.js";
 import movieTvRoutes from "./routes/movietv.route.js";
 import searchRoutes from "./routes/search.route.js";
 
-import actorRoutes from "./routes/actor.route.js"; // Import the actor route
+import actorRoutes from "./routes/actor.route.js";
 import trendingRoutes from "./routes/trending.route.js";
+import bookmarkRoutes from "./routes/bookmark.route.js";
 
 import { ENV_VARS } from "./config/envVars.js";
 import { connectDB } from "./config/db.js";
@@ -25,6 +26,7 @@ app.use("/api/v1/content", protectRoute, movieTvRoutes);
 app.use("/api/v1/search", protectRoute, searchRoutes);
 app.use("/api/v1/actor", protectRoute, actorRoutes);
 app.use("/api/v1/trending", protectRoute, trendingRoutes);
+app.use("/api/v1/bookmark", protectRoute, bookmarkRoutes);
 
 // to deploy the production (react application)
 if(ENV_VARS.NODE_ENV === "production"){

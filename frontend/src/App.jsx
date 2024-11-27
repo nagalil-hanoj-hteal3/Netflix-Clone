@@ -6,7 +6,6 @@ import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authUser.js";
 import { useEffect } from "react";
-import { Loader } from "lucide-react";
 import WatchPage from "./pages/WatchPage";
 import SearchPage from "./pages/SearchPage";
 import HistoryPage from "./pages/HistoryPage";
@@ -16,6 +15,9 @@ import ActorPage from "./pages/ActorPage";
 import MoreInfoPage from "./pages/MoreInfoPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
 import TrendingPage from "./pages/TrendingPage.jsx";
+import BookmarksPage from "./pages/BookmarksPage.jsx";
+
+import AuthLoadingScreen from "./components/skeletons/AuthLoading.jsx";
 
 function App() {
   const {user, isCheckingAuth, authCheck} = useAuthStore();
@@ -27,13 +29,7 @@ function App() {
 
   // this is the loading spinner for authentication purposes
   if(isCheckingAuth){
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center bg-black h-full">
-          <Loader className="animate-spin text-red-600 size-10"/>
-        </div>
-      </div>
-    )
+    return (<AuthLoadingScreen/>)
   }
 
   return (
@@ -64,6 +60,8 @@ function App() {
       <Route path="/account" element={user ? <AccountPage/> : <Navigate to={"/"}/>}/>
 
       <Route path="/trending" element={user ? <TrendingPage/> : <Navigate to={"/"}/>}/>
+      
+      <Route path="/bookmark" element={user ? <BookmarksPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>

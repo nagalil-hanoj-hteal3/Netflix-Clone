@@ -2,14 +2,14 @@ import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import Navbar from "../components/Navbar";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
 import { ChevronLeft, ChevronRight, Film, Tv, Camera } from "lucide-react";
 import { useContentStore } from "../store/content";
-import { Modal } from "../components/actors/Modal";
+import Modal from "../components/actors/Modal.jsx";
 import { ActorHeader } from "../components/actors/ActorHeader";
 import { ActorBody } from "../components/actors/ActorBody";
+import ActorPageLoading from "../components/skeletons/ActorLoading.jsx"
 
 export const ActorPage = () => {
     const { id } = useParams();
@@ -25,7 +25,7 @@ export const ActorPage = () => {
     const [modalContent, setModalContent] = useState([]);
     const [modalTitle, setModalTitle] = useState("");
 
-    console.log("test: ", actorDetails);
+    const [isInitialMount, setIsInitialMount] = useState(true);
 
     const [scrollPositions, setScrollPositions] = useState({
         movies: { isAtStart: true, isAtEnd: false },
@@ -51,76 +51,39 @@ export const ActorPage = () => {
     const tvScrollRef = useRef();
     const imageScrollRef = useRef();
 
-    const fetchActorDetails = async () => {
-        try {
-            const response = await axios.get(`/api/v1/actor/${id}`);
-            setActorDetails(response.data.content);
-        } catch (error) {
-            toast.error(error.response.status === 404
-                ? "Nothing found, make sure you are searching under the right category"
-                : "An error occurred, please try again later");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchActorDetails();
-
-        const fetchActorImages = async () => {
+        const fetchAllData = async () => {
+            setLoading(true);
             try {
-                const response = await axios.get(`/api/v1/actor/${id}/images`);
-                setActorImages(response.data.content.profiles || []);
-            } catch {
-                toast.error("Error fetching images...");
+                // Fetch actor details first
+                const detailsResponse = await axios.get(`/api/v1/actor/${id}`);
+                setActorDetails(detailsResponse.data.content);
+    
+                // Concurrent fetches for other data
+                const [imagesResponse, moviesResponse, tvResponse] = await Promise.all([
+                    axios.get(`/api/v1/actor/${id}/images`).catch(() => ({ data: { content: { profiles: [] } } })),
+                    axios.get(`/api/v1/actor/${id}/movies`).catch(() => ({ data: { content: { cast: [] } } })),
+                    axios.get(`/api/v1/actor/${id}/tv`).catch(() => ({ data: { content: { cast: [] } } }))
+                ]);
+    
+                setActorImages(imagesResponse.data.content.profiles || []);
+                setActorMovies(moviesResponse.data.content.cast || []);
+                setActorTVs(tvResponse.data.content.cast || []);
+            } catch (error) {
+                toast.error(
+                    error.response?.status === 404
+                        ? "Nothing found, make sure you are searching under the right category"
+                        : "An error occurred, please try again later"
+                );
+                setActorDetails(null); // Ensure details are set to null on error
+            } finally {
+                setLoading(false);
+                setIsInitialMount(false);
             }
         };
-
-        const fetchActorMovies = async () => {
-            try {
-                const response = await axios.get(`/api/v1/actor/${id}/movies`);
-                setActorMovies(response.data.content.cast || []);
-            } catch {
-                toast.error("Error fetching movies...");
-            }
-        };
-
-        const fetchActorTVs = async () => {
-            try {
-                const response = await axios.get(`/api/v1/actor/${id}/tv`);
-                setActorTVs(response.data.content.cast || []);
-            } catch {
-                toast.error("Error fetching TV shows...");
-            }
-        };
-
-        fetchActorImages();
-        fetchActorMovies();
-        fetchActorTVs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+        fetchAllData();
     }, [id]);
-
-    const openModal = (title, content) => {
-        setModalTitle(title);
-        setModalContent(content);
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
-
-    const scrollLeft = (ref, section) => {
-        ref.current.scrollBy({ left: -300, behavior: "smooth" });
-        // Use setTimeout to allow the scroll animation to complete
-        setTimeout(() => checkScrollPosition(ref.current, section), 400);
-    };
-
-    const scrollRight = (ref, section) => {
-        ref.current.scrollBy({ left: 300, behavior: "smooth" });
-        // Use setTimeout to allow the scroll animation to complete
-        setTimeout(() => checkScrollPosition(ref.current, section), 400);
-    };
 
     useEffect(() => {
         const moviesList = movieScrollRef.current;
@@ -160,17 +123,35 @@ export const ActorPage = () => {
         };
     }, [actorMovies, actorTVs, actorImages]);
 
+    if (isInitialMount || loading) {
+        return <ActorPageLoading />;
+    }
+
+    const openModal = (title, content) => {
+        setModalTitle(title);
+        setModalContent(content);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const scrollLeft = (ref, section) => {
+        ref.current.scrollBy({ left: -300, behavior: "smooth" });
+        // Use setTimeout to allow the scroll animation to complete
+        setTimeout(() => checkScrollPosition(ref.current, section), 400);
+    };
+
+    const scrollRight = (ref, section) => {
+        ref.current.scrollBy({ left: 300, behavior: "smooth" });
+        // Use setTimeout to allow the scroll animation to complete
+        setTimeout(() => checkScrollPosition(ref.current, section), 400);
+    };
+
     const hasExternalLinks = actorDetails?.homepage || actorDetails?.imdb_id;
 
     if (!hasExternalLinks) return null;
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-r from-purple-800 via-blue-800 to-black p-10">
-                <WatchPageSkeleton />
-            </div>
-        );
-    }
 
     if (!actorDetails) {
         return (

@@ -20,51 +20,63 @@ export const FILTER_OPTIONS = {
     movie: {
         genres: MOVIE_GENRES,
         voteAverages: [
-            { value: 1, label: '1+ Rating '},
-            { value: 2, label: '2+ Rating '},
-            { value: 3, label: '3+ Rating '},
-            { value: 4, label: '4+ Rating '},
-            { value: 5, label: '5+ Rating '},
-            { value: 6, label: '6+ Rating '},
-            { value: 7, label: '7+ Rating' },
-            { value: 8, label: '8+ Rating' },
-            { value: 9, label: '9+ Rating' },
-            { value: 10, label: 'Perfect Rating' }
+            { value: 0, label: '0.0-0.9 Rating' },
+            { value: 1, label: '1.0-1.9 Rating' },
+            { value: 2, label: '2.0-2.9 Rating' },
+            { value: 3, label: '3.0-3.9 Rating' },
+            { value: 4, label: '4.0-4.9 Rating' },
+            { value: 5, label: '5.0-5.9 Rating' },
+            { value: 6, label: '6.0-6.9 Rating' },
+            { value: 7, label: '7.0-7.9 Rating' },
+            { value: 8, label: '8.0-8.9 Rating' },
+            { value: 9, label: '9.0-9.9 Rating' },
+            { value: 10, label: 'Perfect 10 Rating' }
         ],
         releaseDates: [
-            { value: '2020', label: '2020+' },
-            { value: '2010', label: '2010+' },
-            { value: '2000', label: '2000+' },
-            { value: '1990', label: '1990+' },
-            { value: '1980', label: '1980+' },
-            { value: '1970', label: '1970+' },
-            { value: '1960', label: '1960+' },
-            { value: '1950', label: '1950+' },
+            { value: '2020-2029', label: '2020-2029' },
+            { value: '2010-2019', label: '2010-2019' },
+            { value: '2000-2009', label: '2000-2009' },
+            { value: '1990-1999', label: '1990-1999' },
+            { value: '1980-1989', label: '1980-1989' },
+            { value: '1970-1979', label: '1970-1979' },
+            { value: '1960-1969', label: '1960-1969' },
+            { value: '1950-1959', label: '1950-1959' },
+            { value: '1940-1949', label: '1940-1949' },
+            { value: '1930-1939', label: '1930-1939' },
+            { value: '1920-1929', label: '1920-1929' },
+            { value: '1910-1919', label: '1910-1919' },
+            { value: '1900-1909', label: '1900-1909' },
         ]
     },
     tv: {
         genres: TV_GENRES,
         voteAverages: [
-            { value: 1, label: '1+ Rating '},
-            { value: 2, label: '2+ Rating '},
-            { value: 3, label: '3+ Rating '},
-            { value: 4, label: '4+ Rating '},
-            { value: 5, label: '5+ Rating '},
-            { value: 6, label: '6+ Rating '},
-            { value: 7, label: '7+ Rating' },
-            { value: 8, label: '8+ Rating' },
-            { value: 9, label: '9+ Rating' },
-            { value: 10, label: 'Perfect Rating' }
+            { value: 0, label: '0.0-0.9 Rating' },
+            { value: 1, label: '1.0-1.9 Rating' },
+            { value: 2, label: '2.0-2.9 Rating' },
+            { value: 3, label: '3.0-3.9 Rating' },
+            { value: 4, label: '4.0-4.9 Rating' },
+            { value: 5, label: '5.0-5.9 Rating' },
+            { value: 6, label: '6.0-6.9 Rating' },
+            { value: 7, label: '7.0-7.9 Rating' },
+            { value: 8, label: '8.0-8.9 Rating' },
+            { value: 9, label: '9.0-9.9 Rating' },
+            { value: 10, label: 'Perfect 10 Rating' }
         ],
         releaseDates: [
-            { value: '2020', label: '2020+' },
-            { value: '2010', label: '2010+' },
-            { value: '2000', label: '2000+' },
-            { value: '1990', label: '1990+' },
-            { value: '1980', label: '1980+' },
-            { value: '1970', label: '1970+' },
-            { value: '1960', label: '1960+' },
-            { value: '1950', label: '1950+' },
+            { value: '2020-2029', label: '2020-2029' },
+            { value: '2010-2019', label: '2010-2019' },
+            { value: '2000-2009', label: '2000-2009' },
+            { value: '1990-1999', label: '1990-1999' },
+            { value: '1980-1989', label: '1980-1989' },
+            { value: '1970-1979', label: '1970-1979' },
+            { value: '1960-1969', label: '1960-1969' },
+            { value: '1950-1959', label: '1950-1959' },
+            { value: '1940-1949', label: '1940-1949' },
+            { value: '1930-1939', label: '1930-1939' },
+            { value: '1920-1929', label: '1920-1929' },
+            { value: '1910-1919', label: '1910-1919' },
+            { value: '1900-1909', label: '1900-1909' },
         ]
     },
     person: {
@@ -94,8 +106,16 @@ export const getGenreNameById = (type, genreId) => {
     return genre ? genre.name : 'Unknown Genre';
 };
 
+const normalizeString = (str) => {
+    return str.toLowerCase().replace(/[-\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+};
+
 // Client-side filtering function (optional, can be used in SearchPage)
 export const filterSearchResults = (results, activeTab, filters, searchTerm) => {
+    if (!searchTerm) return results;
+
+    const normalizedSearchTerm = normalizeString(searchTerm);
+    
     return results.filter(result => {
         // Genre filter
         if (filters.genre_id && (activeTab === 'movie' || activeTab === 'tv')) {
@@ -110,7 +130,12 @@ export const filterSearchResults = (results, activeTab, filters, searchTerm) => 
 
         // Vote average filter
         if (filters.vote_average && (activeTab === 'movie' || activeTab === 'tv')) {
-            const meetsVoteAverage = result.vote_average >= Number(filters.vote_average);
+            const lowerBound = Number(filters.vote_average);
+            const upperBound = lowerBound === 10 ? 10 : lowerBound + 0.9;
+            
+            const meetsVoteAverage = result.vote_average >= lowerBound && 
+                                    result.vote_average < upperBound;
+            
             if (!meetsVoteAverage) return false;
         }
 
@@ -118,9 +143,11 @@ export const filterSearchResults = (results, activeTab, filters, searchTerm) => 
         if (filters.release_date && (activeTab === 'movie' || activeTab === 'tv')) {
             const dateKey = activeTab === 'movie' ? 'release_date' : 'first_air_date';
             const releaseYear = result[dateKey] ? new Date(result[dateKey]).getFullYear() : null;
-            const filterYear = Number(filters.release_date);
             
-            if (!releaseYear || releaseYear < filterYear) return false;
+            if (filters.release_date) {
+                const [startDecade, endDecade] = filters.release_date.split('-').map(Number);
+                if (!releaseYear || releaseYear < startDecade || releaseYear > endDecade) return false;
+            }
         }
 
         // Gender filter for person
@@ -131,10 +158,10 @@ export const filterSearchResults = (results, activeTab, filters, searchTerm) => 
 
         // Search term filter (if applicable)
         if (searchTerm) {
-            const lowercaseTerm = searchTerm.toLowerCase();
             const matchesTerm = 
-                result.title?.toLowerCase().includes(lowercaseTerm) ||
-                result.name?.toLowerCase().includes(lowercaseTerm);
+                normalizeString(result.title || result.name || '').includes(normalizedSearchTerm) ||
+                normalizeString(result.original_title || result.original_name || '').includes(normalizedSearchTerm);
+            
             if (!matchesTerm) return false;
         }
 
@@ -150,4 +177,4 @@ export const getGenderNameById = (genderId) => {
         3: 'Non-Binary'
     };
     return genderMap[Number(genderId)] || 'Unknown';
-};
+}

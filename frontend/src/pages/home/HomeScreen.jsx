@@ -7,6 +7,7 @@ import useGetTrendingContent from "../../hooks/useGetTrendingContent";
 import { MOVIE_CATEGORIES, ORIGINAL_IMG_BASE_URL, TV_CATEGORIES, MOVIE_GENRES, TV_GENRES } from "../../utils/constants";
 import { useContentStore } from "../../store/content";
 import { getGenreNames } from "../../utils/getGenreNames";
+import HomeScreenLoader from "../../components/skeletons/LoadingContent.jsx";
 
 const HomeScreen = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -17,10 +18,7 @@ const HomeScreen = () => {
 
     if (!trendingContent) {
         return (
-            <div className="h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white relative">
-                <Navbar />
-                <div className="absolute top-0 left-0 w-full h-full bg-black/70 flex items-center justify-center -z-10 shimmer" />
-            </div>
+            <HomeScreenLoader/>
         );
     }
 

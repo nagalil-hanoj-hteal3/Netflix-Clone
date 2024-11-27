@@ -1,10 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useContentStore } from "../store/content";
 import Navbar from "../components/Navbar";
 import { Search, ArrowUpRight, ChevronDown, Filter, X } from "lucide-react";
 import { ORIGINAL_IMG_BASE_URL } from "../utils/constants";
 import { fetchSearchResults, filterSearchResults, FILTER_OPTIONS, formatDate, getGenreNameById } from "../utils/searchUtils";
+import axios from "axios";
+
+const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            func(...args);
+        }, delay);
+    };
+};
 
 export const SearchPage = () => {
 	const { search } = useLocation();
@@ -19,7 +32,7 @@ export const SearchPage = () => {
 	const [unfilteredResults, setUnfilteredResults] = useState([]);
 	const { setSearchResults, setContentType, searchResults } = useContentStore();
 
-	console.log("search results: ", searchResults);
+	// console.log("search results: ", searchResults);
 
 	const searchTypes = [
         { id: 'movie', label: 'Movies' },
@@ -64,6 +77,47 @@ export const SearchPage = () => {
         );
         setSearchResults(filteredResults);
     };
+
+	const debouncedSearch = useCallback(
+        debounce(async (term, tab) => {
+            if (term.length > 2) {  // Only search if term is more than 2 characters
+                const results = await fetchSearchResults(tab, term);
+                
+                setUnfilteredResults(results);
+                
+                const filteredResults = filterSearchResults(
+                    results, 
+                    tab, 
+                    filters, 
+                    term
+                );
+                
+                setSearchResults(filteredResults);
+            } else if (term.length === 0) {
+                // Clear results if search term is empty
+                setSearchResults([]);
+                setUnfilteredResults([]);
+            }
+        }, 300),  // 300ms delay
+        [filters, activeTab]
+    );
+
+	const addToSearchHistory = async (result) => {
+		try {
+			const response = await axios.post('/api/v1/search/addHistory', {
+				id: result.id,
+				image: activeTab === 'person' ? result.profile_path : result.poster_path,
+				title: result.name || result.title,
+				searchType: activeTab
+			});
+		} catch (error) {
+			console.error('Failed to add to search history:', error);
+		}
+	};
+
+	useEffect(() => {
+        debouncedSearch(searchTerm, activeTab);
+    }, [searchTerm, activeTab, debouncedSearch]);
 
 	// Set active tab from URL query param
 	useEffect(() => {
@@ -129,6 +183,7 @@ export const SearchPage = () => {
 			searchTerm
 		);
 		
+		debouncedSearch(searchTerm, activeTab);
 		setSearchResults(filteredResults);
 	};
 
@@ -427,6 +482,7 @@ export const SearchPage = () => {
 											<Link 
 												to={`/actor/${result.id}`} 
 												className="block"
+												onClick={() => addToSearchHistory(result)}
 											>
 												<div className="relative overflow-hidden">
 													<img 
@@ -454,7 +510,10 @@ export const SearchPage = () => {
 										) : (
 											<Link
 												to={`/${activeTab}/moreinfo/${result.id}`}
-												onClick={() => setContentType(activeTab)}
+												onClick={() => {
+													setContentType(activeTab);
+													addToSearchHistory(result);
+												}}
 												className="block"
 											>
 												<div className="relative overflow-hidden">
@@ -496,6 +555,55 @@ export const SearchPage = () => {
 							})}
 						</div>
 					</div>
+
+					{searchResults.length === 0 && searchTerm === '' && (
+						<div className="text-center py-3 text-slate-400">
+							<div className="max-w-xl mx-auto space-y-4">
+								<h3 className="text-2xl font-semibold text-white">
+									Find Your Next Favorite Content
+								</h3>
+								<div className="bg-slate-800/50 rounded-lg p-6 border border-slate-700">
+									<ul className="space-y-3 text-left">
+										<li className="flex items-center space-x-3">
+											<span className="bg-blue-600 text-white rounded-full w-8 h-8 
+												flex items-center justify-center font-bold">1</span>
+											<span>Select a search type: Movies, TV Shows, or Actors</span>
+										</li>
+										<li className="flex items-center space-x-3">
+											<span className="bg-blue-600 text-white rounded-full w-8 h-8 
+												flex items-center justify-center font-bold">2</span>
+											<span>Enter a title, actor name, or keyword</span>
+										</li>
+										<li className="flex items-center space-x-3">
+											<span className="bg-blue-600 text-white rounded-full w-8 h-8 
+												flex items-center justify-center font-bold">3</span>
+											<span>Use filters to refine your search (optional)</span>
+										</li>
+									</ul>
+								</div>
+								<p className="text-slate-400 italic">
+									Pro Tip: Click the filter icon to narrow down your results by genre, 
+									release year, or rating!
+								</p>
+							</div>
+						</div>
+					)}
+
+					{/* A "No Results" state */}
+					{searchResults.length === 0 && searchTerm !== '' && (
+						<div className="text-center py-12 text-slate-400">
+							<h3 className="text-2xl font-semibold text-white mb-4">
+								No Results Found
+							</h3>
+							<p className="mb-4">Try adjusting your search or filters:</p>
+							<ul className="space-y-2 max-w-md mx-auto">
+								<li>✓ Check your spelling</li>
+								<li>✓ Try a broader search term</li>
+								<li>✓ Remove or adjust filters</li>
+								<li>✓ Switch search type (Movies/TV/Actors)</li>
+							</ul>
+						</div>
+					)}
 				</div>
 			</div>
         </div>

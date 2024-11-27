@@ -21,9 +21,9 @@
 }
 
 .shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(to right, #2c2c2c 4%, #333 25%, #2c2c2c 36%);
+  background: linear-gradient(to right, #1e293b 4%, #334155 25%, #1e293b 36%);
   background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
 }
 
 @keyframes shimmer {

@@ -23,6 +23,28 @@ const userSchema = mongoose.Schema({
         type: Array,
         default: [],
     },
+    bookmarks: [{
+        contentId: {
+            type: String,
+            required: true
+        },
+        contentType: {
+            type: String,
+            required: true,
+            enum: ['movie', 'tv']
+        },
+        addedAt: {
+            type: Date,
+            default: Date.now
+        },
+        title: {
+            type: String,
+            required: true
+        },
+        posterPath: {
+            type: String
+        }
+    }]
 });
 
 export const User = mongoose.model('User', userSchema);

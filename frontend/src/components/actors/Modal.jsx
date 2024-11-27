@@ -8,7 +8,7 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
     if (!isOpen) return null;
 
     const modalContent = Array.isArray(content) ? content : [content];
-    const isSingleImage = modalContent.length === 1;
+    const isSingleImage = modalContent?.length === 1;
     const isMovieModal = title.includes("Movies");
     const isTVModal = title.includes("TV Shows");
 
@@ -20,7 +20,7 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
                     : 'bg-gray-800 p-6 rounded-lg w-full max-w-4xl md:max-w-3xl sm:max-w-xl max-h-[95vh] flex flex-col'}
                 text-white relative flex flex-col
             `}>
-                <div className="sticky top-0 z-50 bg-gray-800 py-2">
+                <div className="sticky top-0 z-50 py-2">
                     {!isSingleImage && (
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-2xl font-bold">{title}</h2>
@@ -49,7 +49,7 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
                         : 'grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto'}
                     overflow-y-auto max-h-[100vh]
                 `}>
-                    {modalContent.map((item, idx) => (
+                    {modalContent?.map((item, idx) => (
                         <div 
                             key={idx} 
                             className={`
@@ -60,9 +60,9 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
                         >
                             {(isMovieModal || isTVModal) ? (
                                 <Link
-                                    to={`/${isMovieModal ? 'movie' : 'tv'}/moreinfo/${item.id}`}
+                                    to={`/${isMovieModal ? 'movie' : 'tv'}/moreinfo/${item?.id}`}
                                     onClick={() => 
-                                        useContentStore.getState().setContentType(isMovieModal ? 'movie' : 'tv')
+                                        useContentStore?.getState()?.setContentType(isMovieModal ? 'movie' : 'tv')
                                     }
                                     className="w-full h-full"
                                 >
@@ -74,8 +74,8 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
                                 </Link>
                             ) : (
                                 <img
-                                    src={`${ORIGINAL_IMG_BASE_URL}${item.poster_path || item.file_path}`}
-                                    alt={item.title || item.name || `Image ${idx + 1}`}
+                                    src={`${ORIGINAL_IMG_BASE_URL}${item?.poster_path || item?.file_path}`}
+                                    alt={item?.title || item?.name || `Image ${idx + 1}`}
                                     className={`
                                         ${isSingleImage 
                                             ? 'max-w-full max-h-full object-contain' 
@@ -90,3 +90,5 @@ export const Modal = ({ isOpen, onClose, title, content }) => {
         </div>
     );
 };
+
+export default Modal;

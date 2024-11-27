@@ -3,14 +3,15 @@ import { Link, useParams } from "react-router-dom";
 import { useContentStore } from "../store/content";
 import axios from "axios";
 import Navbar from "../components/Navbar";
-import { ChevronLeft, ChevronRight, Play, Clock, Calendar, Star, Eye, EyeOff, Award } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Clock, Calendar, Star, Eye, EyeOff, Award, Bookmark } from "lucide-react";
 import { ORIGINAL_IMG_BASE_URL, SMALL_IMG_BASE_URL } from "../utils/constants";
 import { formatReleaseDate } from "../utils/dateFunction";
-import WatchPageSkeleton from "../components/skeletons/WatchPageSkeleton";
 import StarRating from "../components/StarRating";
 import InfoIconWithTooltip from "../components/InfoIconWithTooltip";
 import TV_Modal from "../components/TV_Modal";
 import Gallery from "../components/moreinfo/Gallery";
+import toast from "react-hot-toast";
+import CreativeLoadingScreen from "../components/skeletons/MoreInfoLoading"; 
 
 function MoreInfoPage() {
 
@@ -28,6 +29,7 @@ function MoreInfoPage() {
     const [filterRole, setFilterRole] = useState("Cast & Crew");
     const [recommendations, setRecommendations] = useState([]);
     const [contentImages, setContentImages] = useState({ backdrops: []});
+    const [bookmarks, setBookmarks] = useState([]);
 
     const [canScrollStates, setCanScrollStates] = useState({
         cast: { left: false, right: false },
@@ -57,6 +59,50 @@ function MoreInfoPage() {
     // console.log("cast member: ", castMember);
     // console.log("recommendations: ", recommendations);
     // console.log("test: ", contentImages);
+
+    useEffect(() => {
+        const fetchBookmarks = async () => {
+            try {
+                const response = await axios.get('/api/v1/bookmark');
+                setBookmarks(response.data.bookmarks);
+            } catch (error) {
+                console.error('Failed to fetch bookmarks', error);
+            }
+        };
+
+        fetchBookmarks();
+    }, []);
+
+    const handleBookmark = async () => {
+        try {
+            await axios.post('/api/v1/bookmark/add', {
+                contentId: id,
+                contentType: contentType,
+                title: content.title || content.name,
+                posterPath: content.poster_path
+            });
+            // Update local bookmarks state
+            setBookmarks(prev => [...prev, {
+                contentId: id,
+                contentType,
+                title: content.title || content.name,
+                posterPath: content.poster_path
+            }]);
+            toast.success(`Added ${content.original_title || content.name} to your bookmarks list!`);
+        } catch (error) {
+            if (error.response?.status === 400) {
+                toast.error('This item is already in your bookmarks');
+            } else {
+                console.error('Failed to add bookmark', error);
+            }
+        }
+    };
+
+    const isBookmarked = bookmarks.some(
+        bookmark => 
+            bookmark.contentId === id && 
+            bookmark.contentType === contentType
+    );
 
     useEffect(() => {
         setContentTypeFromPath(location);
@@ -228,11 +274,7 @@ function MoreInfoPage() {
         </>
     );
 
-    if(loading) return (
-        <div className="min-h-screen bg-black p-10">
-            <WatchPageSkeleton/>
-        </div>
-    )
+    if(loading) return (<CreativeLoadingScreen/>)
 
     const goToNextReview = () => {
         if(currentReviewIndex < reviewContent?.total_results - 1){
@@ -316,15 +358,25 @@ function MoreInfoPage() {
                                         <p className="text-base lg:text-lg text-gray-300 italic line-clamp-2">"{content.tagline}"</p>
                                     )}
                                 </div>
-                                <Link 
-                                    to={`/watch/${id}`}
-                                    className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white 
-                                            rounded-full font-medium transition-all duration-200 shadow-lg hover:scale-105
-                                            whitespace-nowrap flex-shrink-0"
-                                >
-                                    <Play className="size-5 mr-2"/>
-                                    Watch Trailer
-                                </Link>
+                                <div className="flex flex-row items-center justify-start gap-2">
+                                    <Link 
+                                        to={`/watch/${id}`}
+                                        className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white 
+                                                rounded-full font-medium transition-all duration-200 shadow-lg hover:scale-105
+                                                whitespace-nowrap flex-shrink-0"
+                                    >
+                                        <Play className="size-5 mr-2"/>
+                                        Watch Trailer
+                                    </Link>
+                                    { !isBookmarked && (
+                                        <button 
+                                            onClick={handleBookmark}
+                                            className="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full"
+                                        >
+                                            <Bookmark className="size-6" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Genres */}
