@@ -67,8 +67,16 @@ export const ActorBody = ({ actorDetails, showBio, setShowBio }) => (
 
                 <div className="flex items-center space-x-3">
                     <Star className="text-blue-400" />
-                    <div>
+                    <div className="w-full">
                         <p className="text-slate-400 text-sm">Popularity</p>
+                        <div className="w-full bg-slate-800 rounded-full h-2.5">
+                            <div 
+                                className="bg-blue-600 h-2.5 rounded-full mt-2" 
+                                style={{
+                                    width: `${Math.min(actorDetails?.popularity / 3, 100)}%`
+                                }}
+                            ></div>
+                        </div>
                         <p className="text-slate-200">{actorDetails?.popularity}</p>
                     </div>
                 </div>
@@ -89,48 +97,49 @@ export const ActorBody = ({ actorDetails, showBio, setShowBio }) => (
                     </div>
                     )}
                 
-                <div className="flex space-x-4 mt-4">
-                    {/* Homepage Link */}
-                    <div className="flex flex-col gap-3 mt-4">
-                        <h3 className="text-lg font-semibold text-gray-200 flex items-center gap-2">
-                            <Share2 className="size-4 text-blue-400" />
-                            External Links
-                        </h3>
-                        
-                        <div className="flex flex-wrap items-start gap-3">
-                            {actorDetails?.homepage && (
-                                <a
-                                    href={actorDetails.homepage}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 
-                                            text-blue-400 hover:text-blue-300 rounded-lg transition-all 
-                                            duration-200 hover:bg-slate-700/80 border border-slate-700
-                                            hover:scale-105"
-                                >
-                                    <Globe className="size-4" />
-                                    <span>Official Website</span>
-                                </a>
-                            )}
+                    {(actorDetails?.homepage || actorDetails?.imdb_id) && (
+                        <div className="flex space-x-4 mt-4">
+                            {/* Homepage Link */}
+                            <div className="flex flex-col gap-3 mt-4">
+                                <h3 className="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                                    <Share2 className="size-4 text-blue-400" />
+                                    External Links
+                                </h3>
+                                
+                                <div className="flex flex-wrap items-start gap-3">
+                                    {actorDetails?.homepage && (
+                                        <a
+                                            href={actorDetails.homepage}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 
+                                                    text-blue-400 hover:text-blue-300 rounded-lg transition-all 
+                                                    duration-200 hover:bg-slate-700/80 border border-slate-700
+                                                    hover:scale-105"
+                                        >
+                                            <Globe className="size-4" />
+                                            <span>Official Website</span>
+                                        </a>
+                                    )}
 
-                            {actorDetails?.imdb_id && (
-                                <a
-                                    href={`https://www.imdb.com/name/${actorDetails.imdb_id}/`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 
-                                            text-blue-400 hover:text-blue-300 rounded-lg transition-all 
-                                            duration-200 hover:bg-slate-700/80 border border-slate-700
-                                            hover:scale-105"
-                                >
-                                    <ExternalLink className="size-4" />
-                                    <span>IMDb Profile</span>
-                                </a>
-                            )}
+                                    {actorDetails?.imdb_id && (
+                                        <a
+                                            href={`https://www.imdb.com/name/${actorDetails.imdb_id}/`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/80 
+                                                    text-blue-400 hover:text-blue-300 rounded-lg transition-all 
+                                                    duration-200 hover:bg-slate-700/80 border border-slate-700
+                                                    hover:scale-105"
+                                        >
+                                            <ExternalLink className="size-4" />
+                                            <span>IMDb Profile</span>
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
+                    )}
             </div>
         </div>
     </div>

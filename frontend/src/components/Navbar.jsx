@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from "react-router-dom";
 import { Search, Menu, LogOut, ChevronDown } from "lucide-react";
 import { useAuthStore } from "../store/authUser";
@@ -17,6 +17,7 @@ const Navbar = () => {
             links: [
                 { title: 'Movies', path: '/', action: () => setContentType("movie") },
                 { title: 'TV Shows', path: '/', action: () => setContentType("tv") },
+                { title: 'Person', path: '/person'},
                 { title: 'Trending', path: '/trending' },
             ]
         },

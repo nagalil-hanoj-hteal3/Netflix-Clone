@@ -44,3 +44,13 @@ export async function getActorImages(req, res) {
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 }
+
+export async function getPopularPerson(req, res) {
+    try {
+        const response = await fetchFromTMDB("https://api.themoviedb.org/3/person/popular?language=en-US&page=1");
+        res.status(200).json({success: true, content: response});
+    } catch (error) {
+        console.log("Error fetching popular: ", error.message);
+        res.status(500).json({success: false, message: "Internal server error"});
+    }
+}

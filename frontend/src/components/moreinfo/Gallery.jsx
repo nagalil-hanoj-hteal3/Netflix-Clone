@@ -57,7 +57,7 @@ const Gallery = ({contentImages, ORIGINAL_IMG_BASE_URL}) => {
     return (
         <div className="mb-12">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold">Gallery</h2>
+                <h2 className="text-3xl font-bold text-white">Gallery</h2>
                 <button
                     onClick={() => setShowAllModal(true)}
                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg
@@ -105,7 +105,7 @@ const Gallery = ({contentImages, ORIGINAL_IMG_BASE_URL}) => {
                                 }}
                                 className="p-2 hover:text-blue-400 transition-colors"
                             >
-                                <X className="w-8 h-8" />
+                                <X className="w-8 h-8 text-white" />
                             </button>
                         </div>
 

@@ -32,23 +32,17 @@ export const SearchPage = () => {
 	const [unfilteredResults, setUnfilteredResults] = useState([]);
 	const { setSearchResults, setContentType, searchResults } = useContentStore();
 
-	// console.log("search results: ", searchResults);
-
 	const searchTypes = [
         { id: 'movie', label: 'Movies' },
         { id: 'tv', label: 'TV Shows' },
-        { id: 'person', label: 'Person' }
+        { id: 'person', label: 'Person' },
+		{ id: 'collection', label: 'Collections' }
     ];
 
 	const handleFilterChange = (key, value) => {
         setFilters(prev => {
 			if (key === 'genre_id') {
-				// If value is an empty array, remove the genre_id filter completely
-				if (value.length === 0) {
-					const { genre_id, ...rest } = prev;
-					return rest;
-				}
-				// Otherwise, set the new genre_id array
+				//set the new genre_id array
 				return {
 					...prev,
 					genre_id: value
@@ -104,7 +98,7 @@ export const SearchPage = () => {
 
 	const addToSearchHistory = async (result) => {
 		try {
-			const response = await axios.post('/api/v1/search/addHistory', {
+			await axios.post('/api/v1/search/addHistory', {
 				id: result.id,
 				image: activeTab === 'person' ? result.profile_path : result.poster_path,
 				title: result.name || result.title,
@@ -317,8 +311,8 @@ export const SearchPage = () => {
 						</div>
 					</div>
 				);
-			default:
-				return null;
+			case "collection" : return null;
+			default: return null;
 		}
 	};
 
@@ -429,19 +423,21 @@ export const SearchPage = () => {
                         </div>
 
 						{/* Filter Toggle */}
-                        <div className="relative">
-                            <button 
-                                type="button" 
-                                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`p-3 rounded-lg transition-colors ${
-                                    isFilterOpen 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
-                                }`}
-                            >
-                                {isFilterOpen ? <X className="size-6" /> : <Filter className="size-6" />}
-                            </button>
-                        </div>
+						{ activeTab !== 'collection' && (
+							<div className="relative">
+								<button 
+									type="button" 
+									onClick={() => setIsFilterOpen(!isFilterOpen)}
+									className={`p-3 rounded-lg transition-colors ${
+										isFilterOpen 
+											? 'bg-blue-600 text-white' 
+											: 'bg-slate-800/70 text-slate-300 hover:bg-slate-700'
+									}`}
+								>
+									{isFilterOpen ? <X className="size-6" /> : <Filter className="size-6" />}
+								</button>
+							</div>
+						)}
 					</form>
 
 					{/* Filter Section */}
@@ -507,6 +503,38 @@ export const SearchPage = () => {
 													{renderKnownFor(result)}
 												</div>
 											</Link>
+										) : activeTab === "collection" ? (
+											<Link
+												to={`/collection/${result.id}`}
+												onClick={() => {
+													setContentType(activeTab);
+													addToSearchHistory(result);
+												}}
+												className="block"
+											>
+												<div className="relative overflow-hidden">
+													<img
+														src={ORIGINAL_IMG_BASE_URL + result.poster_path}
+														alt={result.title || result.name}
+														className="w-full h-auto object-cover 
+															transition-transform group-hover:scale-110 
+															group-hover:brightness-75"
+													/>
+													{hoveredId === result.id && (
+														<div className="absolute inset-0 bg-black/30 
+														flex items-center justify-center opacity-0 
+														group-hover:opacity-100 transition-opacity">
+															<ArrowUpRight className="size-8 text-white" />
+														</div>
+													)}
+												</div>
+												<div className="p-4">
+													<h2 className="text-lg font-semibold text-white
+														group-hover:text-blue-300 transition-colors mb-1">
+														{result.title || result.name}
+													</h2>
+												</div>
+											</Link>
 										) : (
 											<Link
 												to={`/${activeTab}/moreinfo/${result.id}`}
@@ -567,7 +595,7 @@ export const SearchPage = () => {
 										<li className="flex items-center space-x-3">
 											<span className="bg-blue-600 text-white rounded-full w-8 h-8 
 												flex items-center justify-center font-bold">1</span>
-											<span>Select a search type: Movies, TV Shows, or Actors</span>
+											<span>Select a search type: Movies, TV Shows, Actors, or Collections</span>
 										</li>
 										<li className="flex items-center space-x-3">
 											<span className="bg-blue-600 text-white rounded-full w-8 h-8 

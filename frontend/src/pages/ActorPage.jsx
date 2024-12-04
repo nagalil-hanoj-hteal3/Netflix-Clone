@@ -149,10 +149,6 @@ export const ActorPage = () => {
         setTimeout(() => checkScrollPosition(ref.current, section), 400);
     };
 
-    const hasExternalLinks = actorDetails?.homepage || actorDetails?.imdb_id;
-
-    if (!hasExternalLinks) return null;
-
     if (!actorDetails) {
         return (
             <div className="bg-slate-950 text-white h-screen flex items-center justify-center">
@@ -165,6 +161,32 @@ export const ActorPage = () => {
             </div>
         );
     }
+
+    const consolidatedMovies = actorMovies.reduce((acc, movie) => {
+        const existingMovie = acc.find(m => m.id === movie.id);
+        if (existingMovie) {
+            // If movie already exists, append the new role to characters
+            if (movie.character && !existingMovie.characters.includes(movie.character)) {
+                existingMovie.characters.push(movie.character);
+            }
+            return acc;
+        }
+        // If movie doesn't exist, add it with characters array
+        return [...acc, { ...movie, characters: [movie.character].filter(Boolean) }];
+    }, []);
+
+    const consolidatedTVs = actorTVs.reduce((acc, show) => {
+        const existingShow = acc.find(s => s.id === show.id);
+        if (existingShow) {
+            // If show already exists, append the new role to characters
+            if (show.character && !existingShow.characters.includes(show.character)) {
+                existingShow.characters.push(show.character);
+            }
+            return acc;
+        }
+        // If show doesn't exist, add it with characters array
+        return [...acc, { ...show, characters: [show.character].filter(Boolean) }];
+    }, []);
 
     return (
         <div className="bg-gradient-to-b from-slate-950 via-slate-900 to-blue-950 text-white min-h-screen">
@@ -206,7 +228,7 @@ export const ActorPage = () => {
                             )}
                             
                             <div ref={movieScrollRef} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
-                                {actorMovies.filter(movie => movie.poster_path).map((movie, idx) => (
+                                {consolidatedMovies.filter(movie => movie.poster_path).map((movie, idx) => (
                                     <Link 
                                         key={idx}
                                         to={`/movie/moreinfo/${movie.id}`}
@@ -223,8 +245,8 @@ export const ActorPage = () => {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                                             <div className="space-y-1">
                                                 <p className="text-white font-medium">{movie.title}</p>
-                                                {movie.character && (
-                                                    <p className="text-blue-300 text-sm">as {movie.character}</p>
+                                                {movie.characters.length > 0 && (
+                                                    <p className="text-blue-300 text-sm">as {movie.characters.join(", ")}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -244,7 +266,7 @@ export const ActorPage = () => {
                     </div>
                 )}
 
-                {/* TV Shows Section - Similar structure to Movies section */}
+                {/* TV Shows Section */}
                 {actorTVs.length > 0 && (
                     <div className="relative space-y-6">
                         <div className="flex items-center justify-between">
@@ -271,7 +293,7 @@ export const ActorPage = () => {
                             )}
                             
                             <div ref={tvScrollRef} className="flex overflow-x-scroll gap-6 p-4 scrollbar-hide">
-                                {actorTVs.filter(tv => tv.poster_path).map((show, idx) => (
+                                {consolidatedTVs.filter(tv => tv.poster_path).map((show, idx) => (
                                     <Link 
                                         key={idx}
                                         to={`/tv/moreinfo/${show.id}`}
@@ -288,8 +310,8 @@ export const ActorPage = () => {
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                                             <div className="space-y-1">
                                                 <p className="text-white font-medium">{show.name}</p>
-                                                {show.character && (
-                                                    <p className="text-blue-300 text-sm">as {show.character}</p>
+                                                {show.characters.length > 0 && (
+                                                    <p className="text-blue-300 text-sm">as {show.characters.join(", ")}</p>
                                                 )}
                                             </div>
                                         </div>

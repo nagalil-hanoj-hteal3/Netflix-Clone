@@ -8,14 +8,16 @@ import { useAuthStore } from "./store/authUser.js";
 import { useEffect } from "react";
 import WatchPage from "./pages/WatchPage";
 import SearchPage from "./pages/SearchPage";
-import HistoryPage from "./pages/HistoryPage";
+import HistoryPage from "./pages/HistoryPage.jsx";
 import NotFound from "./pages/NotFound";
 
-import ActorPage from "./pages/ActorPage";
+import ActorPage from "./pages/ActorPage.jsx";
 import MoreInfoPage from "./pages/MoreInfoPage.jsx";
 import AccountPage from "./pages/AccountPage.jsx";
 import TrendingPage from "./pages/TrendingPage.jsx";
 import BookmarksPage from "./pages/BookmarksPage.jsx";
+import CollectionsPage from "./pages/CollectionsPage.jsx";
+import PersonPage from "./pages/PersonPage.jsx";
 
 import AuthLoadingScreen from "./components/skeletons/AuthLoading.jsx";
 
@@ -62,6 +64,10 @@ function App() {
       <Route path="/trending" element={user ? <TrendingPage/> : <Navigate to={"/"}/>}/>
       
       <Route path="/bookmark" element={user ? <BookmarksPage/> : <Navigate to={"/"}/>}/>
+
+      <Route path="/collection/:id" element={user ? <CollectionsPage/> : <Navigate to={"/"}/>}/>
+
+      <Route path="/person" element={user ? <PersonPage/> : <Navigate to={"/"}/>}/>
 
     </Routes>
     <Toaster/>

@@ -11,6 +11,8 @@ const AccountPage = () => {
     const [selectedAvatar, setSelectedAvatar] = useState(user.image);
     const [tempAvatar, setTempAvatar] = useState(user.image);
 
+    console.log("test: ", user);
+
     const avatars = Array.from({ length: 58 }, (_, i) => `/avatar/${i + 1}.png`).concat(
         "/avatar/avatar1.png",
         "/avatar/avatar2.jpg",

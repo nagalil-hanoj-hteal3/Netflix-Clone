@@ -107,7 +107,15 @@ export const getGenreNameById = (type, genreId) => {
 };
 
 const normalizeString = (str) => {
-    return str.toLowerCase().replace(/[-\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return str
+        .toLowerCase()
+        .replace(/[&+]/g, ' and ')
+        .replace(/['-]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '')
 };
 
 // Client-side filtering function (optional, can be used in SearchPage)
@@ -177,4 +185,4 @@ export const getGenderNameById = (genderId) => {
         3: 'Non-Binary'
     };
     return genderMap[Number(genderId)] || 'Unknown';
-}
+};

@@ -3,21 +3,11 @@ import { useEffect, useState } from "react"
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import { SMALL_IMG_BASE_URL } from "../utils/constants";
-import { Trash, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Trash, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useContentStore } from "../store/content";
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-    const month = monthNames[date.getUTCMonth()];
-    const day = date.getUTCDate();
-    const year = date.getUTCFullYear();
-
-    return `${month} ${day}, ${year}`;
-}
+import HistoryPageSkeleton from "../components/skeletons/HistoryLoading.jsx";
+import { formatDate } from "../utils/historyUtils";
 
 export const HistoryPage = () => {
     const [searchHistory, setSearchHistory] = useState([]);
@@ -27,19 +17,26 @@ export const HistoryPage = () => {
     const [hoveredId, setHoveredId] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState({ sort: false, filter: false });
     const { setContentTypeFromPath } = useContentStore();
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 9;
     
     const uniqueCategories = ["all", ...new Set(searchHistory.map(entry => entry.searchType))];
 
     const sortOptions = [
-        { value: 'title-asc', label: 'Sort by Name (A-Z)' },
-        { value: 'title-desc', label: 'Sort by Name (Z-A)' },
-        { value: 'date-asc', label: 'Sort by Date (Oldest)' },
-        { value: 'date-desc', label: 'Sort by Date (Newest)' }
+        { value: 'title-asc', label: 'Name Ascending' },
+        { value: 'title-desc', label: 'Name Descending' },
+        { value: 'date-asc', label: 'Date (Oldest)' },
+        { value: 'date-desc', label: 'Date (Newest)' }
     ];
 
     useEffect(() => {
         const getSearchHistory = async () => {
             try {
+                setIsLoading(true);
                 const res = await axios.get(`/api/v1/search/history`);
                 const historyData = res.data.content;
                 
@@ -52,6 +49,8 @@ export const HistoryPage = () => {
             } catch (error) {
                 console.log(error.message);
                 setSearchHistory([]);
+            } finally {
+                setIsLoading(false);
             }
         }
         getSearchHistory();
@@ -95,6 +94,8 @@ export const HistoryPage = () => {
                 return `/tv/moreinfo/${entry.id}`;
             case 'person':
                 return `/actor/${entry.id}`;
+            case 'collection':
+                return `/collection/${entry.id}`;
             default:
                 return '/';
         }
@@ -153,6 +154,14 @@ export const HistoryPage = () => {
             return new Date(b.createdAt) - new Date(a.createdAt);
         }
     });
+
+    const totalPages = Math.ceil(filteredAndSortedHistory.length / ITEMS_PER_PAGE);
+    const paginatedHistory = filteredAndSortedHistory.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE, 
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    if (isLoading) { return <HistoryPageSkeleton/>}
 
     if(searchHistory?.length === 0) {
         return (
@@ -275,67 +284,91 @@ export const HistoryPage = () => {
                 </div>
     
                 {/* History Items Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredAndSortedHistory.map((entry) => (
-                        <div 
-                            key={entry.id} 
-                            className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-slate-800 
-                                transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 group"
-                            onMouseEnter={() => setHoveredId(entry.id)}
-                            onMouseLeave={() => setHoveredId(null)}
-                        >
-                            <Link 
-                                to={getEntryPath(entry)}
-                                onClick={() => setContentTypeFromPath(getEntryPath(entry))}
-                                className="flex items-start gap-4"
+                <div className="relative">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {paginatedHistory.map((entry) => (
+                            <div 
+                                key={entry.id} 
+                                className="bg-slate-900/80 backdrop-blur-sm rounded-xl p-4 border border-slate-800 
+                                    transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 group"
+                                onMouseEnter={() => setHoveredId(entry.id)}
+                                onMouseLeave={() => setHoveredId(null)}
                             >
-                                <div className="relative">
-                                    <img
-                                        src={SMALL_IMG_BASE_URL + entry.image}
-                                        alt={entry.title}
-                                        className="size-16 rounded-lg object-cover transition-all duration-300 
-                                            group-hover:brightness-75"
-                                    />
-                                    {hoveredId === entry.id && (
-                                        <div className="absolute inset-0 flex items-center justify-center 
-                                            bg-black/30 rounded-lg transition-opacity duration-300">
-                                            <ArrowUpRight className="size-5 text-white" />
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 
-                                        transition-colors line-clamp-1">
-                                        {entry.title}
-                                    </h3>
-                                    <p className="text-slate-400 text-sm">{formatDate(entry.createdAt)}</p>
+                                <Link 
+                                    to={getEntryPath(entry)}
+                                    onClick={() => setContentTypeFromPath(getEntryPath(entry))}
+                                    className="flex items-start gap-4"
+                                >
+                                    <div className="relative">
+                                        <img
+                                            src={SMALL_IMG_BASE_URL + entry.image}
+                                            alt={entry.title}
+                                            className="size-16 rounded-lg object-cover transition-all duration-300 
+                                                group-hover:brightness-75"
+                                        />
+                                        {hoveredId === entry.id && (
+                                            <div className="absolute inset-0 flex items-center justify-center 
+                                                bg-black/30 rounded-lg transition-opacity duration-300">
+                                                <ArrowUpRight className="size-5 text-white" />
+                                            </div>
+                                        )}
+                                    </div>
                                     
-                                    <span className={`inline-block mt-2 py-1 px-3 rounded-full text-sm 
-                                        ${entry.searchType === 'movie'
-                                            ? 'bg-blue-600/20 text-blue-300 border border-blue-500/20'
-                                            : entry.searchType === 'tv'
-                                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/20'
-                                            : 'bg-green-600/20 text-green-300 border border-green-500/20'
-                                        }`}
-                                    >
-                                        {entry.searchType.charAt(0).toUpperCase() + entry.searchType.slice(1)}
-                                    </span>
-                                </div>
-                            </Link>
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-white group-hover:text-blue-400 
+                                            transition-colors line-clamp-1">
+                                            {entry.title}
+                                        </h3>
+                                        <p className="text-slate-400 text-sm">{formatDate(entry.createdAt)}</p>
+                                        
+                                        <span className={`inline-block mt-2 py-1 px-3 rounded-full text-sm 
+                                            ${entry.searchType === 'movie'
+                                                ? 'bg-blue-600/20 text-blue-300 border border-blue-500/20'
+                                                : entry.searchType === 'tv'
+                                                ?'bg-purple-600/20 text-purple-300 border border-purple-500/20'
+                                                : entry.searchType === 'person' ? 'bg-green-600/20 text-green-300 border border-green-500/20' 
+                                                : 'bg-red-600/20 text-red-300 border border-red-500/20'
+                                            }`}
+                                        >
+                                            {entry.searchType.charAt(0).toUpperCase() + entry.searchType.slice(1)}
+                                        </span>
+                                    </div>
+                                </Link>
 
+                                <button 
+                                    className="absolute top-4 right-4"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handleDelete(entry);
+                                    }}
+                                >
+                                    <Trash className="size-5 text-slate-400 hover:text-blue-400 transition-colors" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {totalPages > 1 && (
+                        <div className="flex justify-center items-center space-x-4 py-4 mt-7">
                             <button 
-                                className="absolute top-4 right-4"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleDelete(entry);
-                                }}
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Trash className="size-5 text-slate-400 hover:text-blue-400 transition-colors" />
+                                <ChevronLeft />
+                            </button>
+                            <span>{currentPage} / {totalPages}</span>
+                            <button 
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages}
+                                className="disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <ChevronRight />
                             </button>
                         </div>
-                    ))}
-                </div>
+                    )}
+
             </div>
     
             {/* Delete Modal */}
@@ -349,4 +382,4 @@ export const HistoryPage = () => {
 
 }
 
-export default HistoryPage
+export default HistoryPage;
