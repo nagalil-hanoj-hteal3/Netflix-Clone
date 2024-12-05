@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useEffect, useRef, useState } from "react";
 import { useContentStore } from "../store/content";
 import axios from "axios";
@@ -8,7 +9,6 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 export const MovieSlider = ({category}) => {
     const { contentType } = useContentStore();
     const [ content, setContent ] = useState([]);
-    // const [ showArrows, setShowArrows ] = useState(false);
     const [canScrollLeft, setCanScrollLeft] = useState(false);
     const [canScrollRight, setCanScrollRight] = useState(false);
 
