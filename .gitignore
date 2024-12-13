@@ -14,8 +14,6 @@ dist-ssr
 
 .env
 
-/frontend/src/utils/profanityFilter.js
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
