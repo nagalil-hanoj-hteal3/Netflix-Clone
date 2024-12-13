@@ -14,6 +14,8 @@ function BookmarksPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
+    console.log("test: ", bookmarks);
+
     // Pagination states
     const [currentMoviePage, setCurrentMoviePage] = useState(1);
     const [currentTvPage, setCurrentTvPage] = useState(1);

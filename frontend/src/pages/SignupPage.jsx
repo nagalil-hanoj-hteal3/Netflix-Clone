@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/authUser.js";
 import { ChevronRight, UserCircle2, Lock, Mail, UserCheck, CheckCircle2, XCircle } from "lucide-react";
+import { validateUsername } from "../utils/profanityFilter.js";
 
 function SignupPage() {
     const { searchParams } = new URL(document.location);
@@ -14,10 +15,33 @@ function SignupPage() {
     const [passwordStrength, setPasswordStrength] = useState("");
     const [imgLoading, setImgLoading] = useState(true);
 
+    const [usernameError, setUsernameError] = useState("");
+
+    const handleUsernameChange = (e) => {
+        const newUsername = e.target.value;
+        setUsername(newUsername);
+
+        // Validate username in real-time
+        const validationResult = validateUsername(newUsername);
+        if (!validationResult.isValid) {
+            setUsernameError(validationResult.message);
+        } else {
+            setUsernameError("");
+        }
+    };
+
     const { signup, isSigningUp } = useAuthStore();
 
     const handleSignUp = (e) => {
         e.preventDefault();
+
+        // Perform final validation before signup
+        const usernameValidation = validateUsername(username);
+        if (!usernameValidation.isValid) {
+            setUsernameError(usernameValidation.message);
+            return;
+        }
+
         signup({ email, username, password, confirmPassword });
     }
 
@@ -135,12 +159,15 @@ function SignupPage() {
                                         placeholder="john.doe"
                                         id="username"
                                         value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        onChange={handleUsernameChange}
                                         required
                                         minLength={3}
                                         maxLength={20}
                                     />
                                 </div>
+                                {usernameError && (
+                                    <p className="text-red-400 text-sm mt-2">{usernameError}</p>
+                                )}
                             </div>
 
                             <div>
@@ -205,7 +232,7 @@ function SignupPage() {
 
                             <button
                                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={isSigningUp || password !== confirmPassword}
+                                disabled={isSigningUp || password !== confirmPassword || !validateUsername(username).isValid}
                             >
                                 {isSigningUp ? "Creating Account..." : "Create Account"}
                                 <ChevronRight className="size-5" />

@@ -188,74 +188,120 @@ export const SearchPage = () => {
     }, [filters, searchTerm]);
 
 	const renderFilters = () => {
+		// Get unique release years, ratings, and genres from the unfiltered results
+		const uniqueReleaseYears = new Set();
+		const uniqueRatings = new Set();
+		const uniqueGenres = new Set();
+
+		// Get unique genders from results
+		const uniqueGenders = new Set(
+			unfilteredResults
+				.map(person => person.gender)
+				.filter(gender => gender !== undefined)
+		);
+	
+		searchResults.forEach(result => {
+			if (activeTab === 'movie' || activeTab === 'tv') {
+				// Determine the date key based on the active tab
+				const dateKey = activeTab === 'movie' ? 'release_date' : 'first_air_date';
+				
+				if (result[dateKey]) {
+					const year = new Date(result[dateKey]).getFullYear();
+					const decade = Math.floor(year / 10) * 10;
+					uniqueReleaseYears.add(`${decade}-${decade + 9}`);
+				}
+	
+				// Add vote averages
+				if (result.vote_average !== undefined) {
+					const ratingBucket = Math.floor(result.vote_average);
+					uniqueRatings.add(ratingBucket);
+				}
+	
+				// Add genres
+				result.genre_ids?.forEach(genreId => {
+					uniqueGenres.add(genreId);
+				});
+			}
+		});
+	
 		switch(activeTab) {
 			case 'movie':
 			case 'tv':
 				return (
-                    <div className="flex flex-wrap gap-4 w-full">
-                        {/* Genre Filter */}
+					<div className="flex flex-wrap gap-4 w-full">
+						{/* Genre Filter */}
 						<div className="relative w-full sm:w-auto flex-grow">
-							<div className="bg-slate-800 rounded-lg p-2">
-								{/* Selected Genres Display */}
-								<div className="flex flex-wrap gap-2 mb-2">
-									{filters.genre_id && Array.isArray(filters.genre_id) && 
-										filters.genre_id.map((genreId) => (
-											<span 
-												key={genreId} 
-												className="bg-blue-600/20 text-blue-200 px-2 py-1 
-													rounded-full text-sm flex items-center gap-2"
-											>
-												{getGenreNameById(activeTab, genreId)}
-												<button 
-													onClick={() => {
-														setFilters(prev => ({
-															...prev,
-															genre_id: prev.genre_id.filter(id => id !== genreId)
-														}));
-													}}
-												>
-													<X className="size-4" />
-												</button>
-											</span>
-										))
-									}
-								</div>
+                            {(uniqueGenres.size > 0 || (filters.genre_id && filters.genre_id.length > 0)) && (
+                                <div 
+                                    className="w-full bg-slate-800 text-white p-2 rounded-lg relative"
+                                >
+                                    {/* Selected Genres Display */}
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                        {filters.genre_id && Array.isArray(filters.genre_id) && 
+                                            filters.genre_id.map((genreId) => (
+                                                <span 
+                                                    key={genreId} 
+                                                    className="bg-blue-600/20 text-blue-200 px-2 py-1 
+                                                        rounded-full text-sm flex items-center gap-2"
+                                                >
+                                                    {getGenreNameById(activeTab, genreId)}
+                                                    <button 
+                                                        onClick={() => {
+                                                            setFilters(prev => ({
+                                                                ...prev,
+                                                                genre_id: prev.genre_id.filter(id => id !== genreId)
+                                                            }));
+                                                        }}
+                                                    >
+                                                        <X className="size-4" />
+                                                    </button>
+                                                </span>
+                                            ))
+                                        }
+                                    </div>
 
-								{/* Custom Multi-Select Dropdown */}
-								<div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-									{FILTER_OPTIONS[activeTab].genres.map(genre => (
-										<label 
-											key={genre.id} 
-											className="flex items-center space-x-2 cursor-pointer"
-										>
-											<input 
-												type="checkbox"
-												value={genre.id}
-												checked={filters.genre_id?.includes(genre.id) || false}
-												onChange={(e) => {
-													const genreId = Number(e.target.value);
-													setFilters(prev => {
-														const currentGenres = prev.genre_id || [];
-														const newGenres = e.target.checked
-															? [...currentGenres, genreId]
-															: currentGenres.filter(id => id !== genreId);
-														
-														return {
-															...prev,
-															genre_id: newGenres
-														};
-													});
-												}}
-												className="form-checkbox h-4 w-4 text-blue-600 bg-slate-800 border-slate-700 rounded"
-											/>
-											<span className="text-white text-sm">{genre.name}</span>
-										</label>
-									))}
-								</div>
-							</div>
+                                    {/* Genre Checkbox Grid */}
+                                    <div 
+                                        className={`grid grid-cols-2 gap-2 max-h-48 overflow-y-auto 
+                                            ${(!(filters.genre_id?.length > 0) && searchTerm.length === 0) ? 'invisible' : ''}`}
+                                    >
+                                        {FILTER_OPTIONS[activeTab].genres
+                                            .filter(genre => uniqueGenres.has(genre.id))
+                                            .map(genre => (
+                                                <label 
+                                                    key={genre.id} 
+                                                    className="flex items-center space-x-2 cursor-pointer"
+                                                >
+                                                    <input 
+                                                        type="checkbox"
+                                                        value={genre.id}
+                                                        checked={filters.genre_id?.includes(genre.id) || false}
+                                                        onChange={(e) => {
+                                                            const genreId = Number(e.target.value);
+                                                            setFilters(prev => {
+                                                                const currentGenres = prev.genre_id || [];
+                                                                const newGenres = e.target.checked
+                                                                    ? [...currentGenres, genreId]
+                                                                    : currentGenres.filter(id => id !== genreId);
+                                                                
+                                                                return {
+                                                                    ...prev,
+                                                                    genre_id: newGenres
+                                                                };
+                                                            });
+                                                        }}
+                                                        className="form-checkbox h-4 w-4 text-blue-600 bg-slate-800 border-slate-700 rounded"
+                                                    />
+                                                    <span className="text-white text-sm">{genre.name}</span>
+                                                </label>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+                            )}
 						</div>
-
-                        {/* Release Date Filter */}
+	
+						{/* Release Date Filter */}
 						<div className="relative w-full sm:w-auto flex-grow">
 							<select 
 								value={filters.release_date || ''}
@@ -263,11 +309,14 @@ export const SearchPage = () => {
 								className="w-full bg-slate-800 text-white p-2 rounded-lg"
 							>
 								<option value="">Release Year</option>
-								{FILTER_OPTIONS[activeTab].releaseDates.map(year => (
-									<option key={year.value} value={year.value}>
-										{year.label}
-									</option>
-								))}
+								{FILTER_OPTIONS[activeTab].releaseDates
+									.filter(year => uniqueReleaseYears.has(year.value))
+									.map(year => (
+										<option key={year.value} value={year.value}>
+											{year.label}
+										</option>
+									))
+								}
 							</select>
 						</div>
 						
@@ -279,15 +328,18 @@ export const SearchPage = () => {
 								className="w-full bg-slate-800 text-white p-2 rounded-lg"
 							>
 								<option value="">Rating</option>
-								{FILTER_OPTIONS.movie.voteAverages.map(rating => (
-									<option key={rating.value} value={rating.value}>
-										{rating.label}
-									</option>
-								))}
+								{FILTER_OPTIONS.movie.voteAverages
+									.filter(rating => uniqueRatings.has(rating.value))
+									.map(rating => (
+										<option key={rating.value} value={rating.value}>
+											{rating.label}
+										</option>
+									))
+								}
 							</select>
 						</div>
-                    </div>
-                );
+					</div>
+				);
 			case 'person':
 				return (
 					<div className="flex flex-wrap gap-4 w-full">
@@ -302,17 +354,22 @@ export const SearchPage = () => {
 								className="w-full bg-slate-800 text-white p-2 rounded-lg max-h-48 overflow-y-auto"
 							>
 								<option value="">All Genders</option>
-								{FILTER_OPTIONS.person.genders.map(gender => (
-									<option key={gender.id} value={gender.id}>
-										{gender.name}
-									</option>
-								))}
+								{FILTER_OPTIONS.person.genders
+									.filter(gender => uniqueGenders.has(gender.id))
+									.map(gender => (
+										<option key={gender.id} value={gender.id}>
+											{gender.name}
+										</option>
+									))
+								}
 							</select>
 						</div>
 					</div>
 				);
-			case "collection" : return null;
-			default: return null;
+			case "collection" : 
+				return null;
+			default: 
+				return null;
 		}
 	};
 
@@ -333,12 +390,12 @@ export const SearchPage = () => {
                                 alt={item.title || item.name} 
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 
+                            {/* <div className="absolute bottom-0 left-0 right-0 
                                 bg-black/70 p-1 truncate text-center">
                                 <p className="text-xs text-white">
                                     {item.title || item.name}
                                 </p>
-                            </div>
+                            </div> */}
                         </div>
                     ))}
                 </div>
@@ -412,6 +469,16 @@ export const SearchPage = () => {
                                 />
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 
                                     size-5 text-slate-400" />
+									{searchTerm && (
+										<button
+											type="button"
+											onClick={() => setSearchTerm('')}
+											className="absolute right-3 top-1/2 -translate-y-1/2 
+												text-slate-400 hover:text-white"
+										>
+											<X className="size-5" />
+										</button>
+									)}
                             </div>
                             <button 
                                 type="submit"
@@ -441,11 +508,13 @@ export const SearchPage = () => {
 					</form>
 
 					{/* Filter Section */}
-                    {isFilterOpen && (
+                    {isFilterOpen && activeTab !== 'collection' && (
                         <div className="bg-slate-800/50 rounded-lg p-4 mb-4">
                             <div className="flex flex-wrap gap-4 items-center">
                                 {renderFilters()}
-                                {Object.keys(filters).length > 0 && (
+                                {Object.values(filters).some(filter => 
+										(Array.isArray(filter) ? filter.length > 0 : filter !== undefined)
+									) && (
                                     <button 
                                         onClick={clearFilters}
                                         className="bg-red-600/20 text-red-300 px-3 py-1 
@@ -497,8 +566,8 @@ export const SearchPage = () => {
 													)}
 												</div>
 												<div className="p-4">
-													<h2 className="text-lg font-semibold text-white
-                                                group-hover:text-blue-300 transition-colors mb-2">{result.name}
+													<h2 className="text-lg font-semibold text-white group-hover:text-blue-300 transition-colors mb-2">
+														{result.name}
 													</h2>
 													{renderKnownFor(result)}
 												</div>

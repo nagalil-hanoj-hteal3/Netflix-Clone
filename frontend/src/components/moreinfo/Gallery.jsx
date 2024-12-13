@@ -111,36 +111,42 @@ const Gallery = ({contentImages, ORIGINAL_IMG_BASE_URL}) => {
 
                         {/* Tabs */}
                         <div className="flex gap-4 mb-6 border-b border-gray-700">
-                            <button
-                                onClick={() => setActiveTab('backdrops')}
-                                className={`pb-2 px-4 transition-colors ${
-                                    activeTab === 'backdrops'
-                                        ? 'border-b-2 border-blue-500 text-blue-500'
-                                        : 'text-gray-400 hover:text-gray-300'
-                                }`}
-                            >
-                                Backdrops ({contentImages?.backdrops?.length || 0})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('posters')}
-                                className={`pb-2 px-4 transition-colors ${
-                                    activeTab === 'posters'
-                                        ? 'border-b-2 border-blue-500 text-blue-500'
-                                        : 'text-gray-400 hover:text-gray-300'
-                                }`}
-                            >
-                                Posters ({contentImages?.posters?.length || 0})
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('logos')}
-                                className={`pb-2 px-4 transition-colors ${
-                                    activeTab === 'logos'
-                                        ? 'border-b-2 border-blue-500 text-blue-500'
-                                        : 'text-gray-400 hover:text-gray-300'
-                                }`}
-                            >
-                                Logos ({contentImages?.logos?.length || 0})
-                            </button>
+                            {contentImages?.backdrops?.length > 0 && (
+                                <button
+                                    onClick={() => setActiveTab('backdrops')}
+                                    className={`pb-2 px-4 transition-colors ${
+                                        activeTab === 'backdrops'
+                                            ? 'border-b-2 border-blue-500 text-blue-500'
+                                            : 'text-gray-400 hover:text-gray-300'
+                                    }`}
+                                >
+                                    Backdrops ({contentImages?.backdrops?.length || 0})
+                                </button>
+                            )}
+                            {contentImages?.posters?.length > 0 && (
+                                <button
+                                    onClick={() => setActiveTab('posters')}
+                                    className={`pb-2 px-4 transition-colors ${
+                                        activeTab === 'posters'
+                                            ? 'border-b-2 border-blue-500 text-blue-500'
+                                            : 'text-gray-400 hover:text-gray-300'
+                                    }`}
+                                >
+                                    Posters ({contentImages?.posters?.length || 0})
+                                </button>
+                            )}
+                            {contentImages?.logos?.length > 0 && (
+                                <button
+                                    onClick={() => setActiveTab('logos')}
+                                    className={`pb-2 px-4 transition-colors ${
+                                        activeTab === 'logos'
+                                            ? 'border-b-2 border-blue-500 text-blue-500'
+                                            : 'text-gray-400 hover:text-gray-300'
+                                    }`}
+                                >
+                                    Logos ({contentImages?.logos?.length || 0})
+                                </button>
+                            )}
                         </div>
 
                         {/* Images Grid */}
