@@ -26,17 +26,19 @@ export const ActorBody = ({ actorDetails, showBio, setShowBio }) => (
                     <Calendar className="text-blue-400" />
                     <div>
                         <p className="text-slate-400 text-sm">Birthday</p>
-                        <p className="text-slate-200">
+                        <div className="text-slate-200">
                             {actorDetails?.birthday ? (
                             <>
-                                {actorDetails?.birthday} 
-                                {actorDetails?.deathday 
-                                ? ` - ${actorDetails?.deathday} (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})` 
-                                : ` (Age: ${calculateAge(actorDetails?.birthday, actorDetails?.deathday)})`
-                                }
+                                <p>Born: {actorDetails?.birthday}</p>
+                                {actorDetails?.deathday && (
+                                    <p>Died: {actorDetails?.deathday}</p>
+                                )}
+                                <p className="text-xs text-slate-400">
+                                    Age: {calculateAge(actorDetails?.birthday, actorDetails?.deathday)}
+                                </p>
                             </>
                             ) : "N/A"}
-                        </p>
+                        </div>
                     </div>
                 </div>
 

@@ -18,6 +18,8 @@ export const ActorPage = () => {
     const [loading, setLoading] = useState(true);
     const [showBio, setShowBio] = useState(false);
 
+    console.log("test: ", actorDetails);
+
     const [actorImages, setActorImages] = useState([]);
     const [actorMovies, setActorMovies] = useState([]);
     const [actorTVs, setActorTVs] = useState([]);
