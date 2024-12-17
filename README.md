@@ -1,7 +1,7 @@
 # Trailo-Hub 
 <p>This Trailo-Hub streaming website enables users to browse movies, TV shows, collections, and actors with a fully responsive interface from laptop, phone, etc. This project demonstrates a full-stack development process using the MERN stack (MongoDB, Express, React, Node.js) and integrates advanced features and optimizations.</p>
 <p>Link to try the website: Click <a href="https://trailohub.onrender.com/" target="_blank">Here</a>!</p>
-<a href="https://youtu.be/gBgN-snVXf0" target="_blank">Click here to watch the demo!</a>
+<a href="https://www.youtube.com/watch?v=Zp8TEOR2sHQ" target="_blank">Click here to watch the demo!</a>
 
 <h1>📚 Project Overview</h1>
 <p>This project is inspired by a tutorial by <a href="https://www.youtube.com/@asaprogrammer_">As A Programmer</a>, and includes several custom enhancements beyond the tutorial content. The core functionalities include comprehensive content browsing, user authentication, responsive UI, and rich media metadata such as cast members, reviews, and personalized recommendations.</p>
